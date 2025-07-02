@@ -77,19 +77,31 @@
         .hidden {
             display: none;
         }
+
+        #status {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
     <div class="login-container">
         <h1>Login</h1>
+        
+        <!-- Debug button -->
+        <button type="button" id="testAdd" style="background: green; margin-bottom: 1rem;">Test Add User</button>
+        <div id="status"></div>
+        
         <form id="loginForm">
             <div class="form-group">
                 <label for="email">Email:</label>
-                <input type="email" id="email" required>
+                <input type="email" id="email" value="user@example.com" required>
             </div>
             <div class="form-group">
                 <label for="password">Password:</label>
-                <input type="password" id="password" required>
+                <input type="password" id="password" value="password123" required>
             </div>
             <button type="submit">Login</button>
             <div id="error" class="error hidden"></div>
@@ -97,39 +109,45 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getFirestore, collection, query, where, getDocs, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        // FIXED: Updated to correct SDK version
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+        import { getFirestore, collection, query, where, getDocs, addDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
-        // Your Firebase config (replace with your actual config)
         const firebaseConfig = {
-          apiKey: "AIzaSyAt_HJiP_uuWC7-AqMKlfLwjQFsESjB364",
-          authDomain: "my-admin-dashboard-b9c89.firebaseapp.com",
-          projectId: "my-admin-dashboard-b9c89",
-          storageBucket: "my-admin-dashboard-b9c89.firebasestorage.app",
-          messagingSenderId: "1001105953619",
-          appId: "1:1001105953619:web:1e2cf52a9ff37aeb5207a6",
-          measurementId: "G-DGTX5YCKYF"
+            apiKey: "AIzaSyAt_HJiP_uuWC7-AqMKlfLwjQFsESjB364",
+            authDomain: "my-admin-dashboard-b9c89.firebaseapp.com",
+            projectId: "my-admin-dashboard-b9c89",
+            storageBucket: "my-admin-dashboard-b9c89.firebasestorage.app",
+            messagingSenderId: "1001105953619",
+            appId: "1:1001105953619:web:1e2cf52a9ff37aeb5207a6",
+            measurementId: "G-DGTX5YCKYF"
         };
 
+        console.log("Initializing Firebase...");
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        console.log("Firebase initialized successfully");
 
-        // Add initial admin user (run this once)
-        async function addInitialUser() {
+        const statusDiv = document.getElementById('status');
+
+        // Test button to add user
+        document.getElementById('testAdd').addEventListener('click', async () => {
+            statusDiv.textContent = "Adding user...";
+            console.log("Attempting to add user...");
+            
             try {
                 const docRef = await addDoc(collection(db, "users"), {
                     email: "user@example.com",
                     password: "password123",
                     isAdmin: 1
                 });
+                statusDiv.textContent = "✅ Success! User added with ID: " + docRef.id;
                 console.log("Initial user added with ID: ", docRef.id);
             } catch (e) {
+                statusDiv.textContent = "❌ Error: " + e.message;
                 console.error("Error adding document: ", e);
             }
-        }
-
-        // Uncomment this line to add the initial user (comment it out after first run)
-        addInitialUser();
+        });
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -138,11 +156,15 @@
             const password = document.getElementById('password').value;
             const errorDiv = document.getElementById('error');
             
+            console.log("Attempting login with:", email);
+            
             try {
                 const q = query(collection(db, "users"), 
                     where("email", "==", email), 
                     where("password", "==", password));
                 const querySnapshot = await getDocs(q);
+                
+                console.log("Query result:", querySnapshot.size, "documents found");
                 
                 if (querySnapshot.empty) {
                     errorDiv.textContent = "Invalid credentials";
@@ -150,6 +172,7 @@
                 } else {
                     querySnapshot.forEach((doc) => {
                         const userData = doc.data();
+                        console.log("User data:", userData);
                         localStorage.setItem('user', JSON.stringify({
                             email: userData.email,
                             isAdmin: userData.isAdmin
@@ -158,7 +181,7 @@
                     });
                 }
             } catch (error) {
-                errorDiv.textContent = "Login failed";
+                errorDiv.textContent = "Login failed: " + error.message;
                 errorDiv.classList.remove('hidden');
                 console.error("Error:", error);
             }
