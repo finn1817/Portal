@@ -20,7 +20,7 @@
             justify-content: center;
         }
         
-        .login-container {
+        .auth-container {
             background: white;
             padding: 2rem;
             border-radius: 8px;
@@ -29,7 +29,7 @@
             max-width: 400px;
         }
         
-        .login-container h1 {
+        .auth-container h1 {
             text-align: center;
             margin-bottom: 2rem;
             color: #333;
@@ -62,54 +62,102 @@
             border-radius: 4px;
             font-size: 1rem;
             cursor: pointer;
+            margin-bottom: 0.5rem;
         }
         
         button:hover {
             background: #0056b3;
         }
         
-        .error {
-            color: red;
+        .secondary-btn {
+            background: #28a745;
+        }
+        
+        .secondary-btn:hover {
+            background: #218838;
+        }
+        
+        .toggle-btn {
+            background: transparent;
+            color: #007bff;
+            text-decoration: underline;
+            border: none;
+            padding: 0.5rem;
+        }
+        
+        .toggle-btn:hover {
+            background: transparent;
+            color: #0056b3;
+        }
+        
+        .error, .success {
             margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 4px;
             text-align: center;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
         }
         
         .hidden {
             display: none;
         }
-
-        #status {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: #f0f0f0;
-            border-radius: 4px;
-        }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <h1>Login</h1>
-        
-        <!-- Debug button -->
-        <button type="button" id="testAdd" style="background: green; margin-bottom: 1rem;">Test Add User</button>
-        <div id="status"></div>
-        
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" value="user@example.com" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" value="password123" required>
-            </div>
-            <button type="submit">Login</button>
-            <div id="error" class="error hidden"></div>
-        </form>
+    <div class="auth-container">
+        <!-- Login Form -->
+        <div id="loginSection">
+            <h1>Login</h1>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email:</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password:</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit">Login</button>
+                <button type="button" class="toggle-btn" id="showSignup">Need an account? Sign up</button>
+            </form>
+        </div>
+
+        <!-- Sign Up Form -->
+        <div id="signupSection" class="hidden">
+            <h1>Sign Up</h1>
+            <form id="signupForm">
+                <div class="form-group">
+                    <label for="signupEmail">Email:</label>
+                    <input type="email" id="signupEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password:</label>
+                    <input type="password" id="signupPassword" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password:</label>
+                    <input type="password" id="confirmPassword" required minlength="6">
+                </div>
+                <button type="submit" class="secondary-btn">Create Account</button>
+                <button type="button" class="toggle-btn" id="showLogin">Already have an account? Login</button>
+            </form>
+        </div>
+
+        <div id="message" class="hidden"></div>
     </div>
 
     <script type="module">
-        // FIXED: Updated to correct SDK version
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
         import { getFirestore, collection, query, where, getDocs, addDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
@@ -123,40 +171,103 @@
             measurementId: "G-DGTX5YCKYF"
         };
 
-        console.log("Initializing Firebase...");
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        console.log("Firebase initialized successfully");
 
-        const statusDiv = document.getElementById('status');
+        // DOM elements
+        const loginSection = document.getElementById('loginSection');
+        const signupSection = document.getElementById('signupSection');
+        const messageDiv = document.getElementById('message');
 
-        // Test button to add user
-        document.getElementById('testAdd').addEventListener('click', async () => {
-            statusDiv.textContent = "Adding user...";
-            console.log("Attempting to add user...");
+        // Toggle between login and signup
+        document.getElementById('showSignup').addEventListener('click', () => {
+            loginSection.classList.add('hidden');
+            signupSection.classList.remove('hidden');
+            clearMessage();
+        });
+
+        document.getElementById('showLogin').addEventListener('click', () => {
+            signupSection.classList.add('hidden');
+            loginSection.classList.remove('hidden');
+            clearMessage();
+        });
+
+        // Helper functions
+        function showMessage(text, type = 'error') {
+            messageDiv.textContent = text;
+            messageDiv.className = type;
+            messageDiv.classList.remove('hidden');
+        }
+
+        function clearMessage() {
+            messageDiv.classList.add('hidden');
+        }
+
+        // Check if email already exists
+        async function emailExists(email) {
+            const q = query(collection(db, "users"), where("email", "==", email));
+            const querySnapshot = await getDocs(q);
+            return !querySnapshot.empty;
+        }
+
+        // Sign Up Form
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // Validation
+            if (password !== confirmPassword) {
+                showMessage("Passwords don't match!");
+                return;
+            }
+
+            if (password.length < 6) {
+                showMessage("Password must be at least 6 characters!");
+                return;
+            }
             
             try {
+                // Check if email already exists
+                if (await emailExists(email)) {
+                    showMessage("Email already exists! Please use a different email.");
+                    return;
+                }
+
+                // Create new user (always non-admin by default)
                 const docRef = await addDoc(collection(db, "users"), {
-                    email: "user@example.com",
-                    password: "password123",
-                    isAdmin: 1
+                    email: email,
+                    password: password,
+                    isAdmin: 0,
+                    createdAt: new Date().toISOString()
                 });
-                statusDiv.textContent = "✅ Success! User added with ID: " + docRef.id;
-                console.log("Initial user added with ID: ", docRef.id);
-            } catch (e) {
-                statusDiv.textContent = "❌ Error: " + e.message;
-                console.error("Error adding document: ", e);
+                
+                showMessage("Account created successfully! You can now login.", 'success');
+                
+                // Clear form and switch to login
+                document.getElementById('signupForm').reset();
+                setTimeout(() => {
+                    signupSection.classList.add('hidden');
+                    loginSection.classList.remove('hidden');
+                    clearMessage();
+                    // Pre-fill login email
+                    document.getElementById('loginEmail').value = email;
+                }, 2000);
+                
+            } catch (error) {
+                showMessage("Error creating account: " + error.message);
+                console.error("Error:", error);
             }
         });
 
+        // Login Form
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('error');
-            
-            console.log("Attempting login with:", email);
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
             
             try {
                 const q = query(collection(db, "users"), 
@@ -164,16 +275,13 @@
                     where("password", "==", password));
                 const querySnapshot = await getDocs(q);
                 
-                console.log("Query result:", querySnapshot.size, "documents found");
-                
                 if (querySnapshot.empty) {
-                    errorDiv.textContent = "Invalid credentials";
-                    errorDiv.classList.remove('hidden');
+                    showMessage("Invalid email or password!");
                 } else {
                     querySnapshot.forEach((doc) => {
                         const userData = doc.data();
-                        console.log("User data:", userData);
                         localStorage.setItem('user', JSON.stringify({
+                            id: doc.id,
                             email: userData.email,
                             isAdmin: userData.isAdmin
                         }));
@@ -181,8 +289,7 @@
                     });
                 }
             } catch (error) {
-                errorDiv.textContent = "Login failed: " + error.message;
-                errorDiv.classList.remove('hidden');
+                showMessage("Login failed: " + error.message);
                 console.error("Error:", error);
             }
         });
