@@ -32,6 +32,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
         }
         
         .light .header {
@@ -54,6 +55,11 @@
             padding: 2rem;
             border-radius: 8px;
             margin-bottom: 2rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
         }
         
         .light .card {
@@ -61,9 +67,17 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
+        .light .card:hover {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
         .dark .card {
             background: #2d2d2d;
             box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .dark .card:hover {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
         }
         
         button {
@@ -72,6 +86,11 @@
             border-radius: 4px;
             cursor: pointer;
             margin-left: 1rem;
+            transition: all 0.2s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-1px);
         }
         
         .theme-btn {
@@ -86,6 +105,11 @@
         
         .admin-btn {
             background: #28a745;
+            color: white;
+        }
+        
+        .feature-btn {
+            background: #17a2b8;
             color: white;
         }
         
@@ -176,6 +200,11 @@
             color: #212529;
         }
 
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+
         .loading {
             text-align: center;
             padding: 2rem;
@@ -200,6 +229,11 @@
             padding: 1rem;
             border-radius: 8px;
             text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: scale(1.05);
         }
 
         .light .stat-card {
@@ -222,6 +256,156 @@
             font-size: 0.9rem;
             margin-top: 0.5rem;
         }
+
+        /* Feature Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .feature-card {
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .light .feature-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .dark .feature-card {
+            background: linear-gradient(135deg, #434343 0%, #000000 100%);
+            color: white;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-desc {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .dark .modal-content {
+            background-color: #2d2d2d;
+            color: white;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+        }
+
+        /* Activity Log */
+        .activity-item {
+            padding: 0.75rem;
+            border-left: 3px solid #007bff;
+            margin-bottom: 0.5rem;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .light .activity-item {
+            background: #f8f9fa;
+        }
+
+        .dark .activity-item {
+            background: #495057;
+        }
+
+        .activity-time {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        /* Profile Section */
+        .profile-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .info-item {
+            padding: 1rem;
+            border-radius: 4px;
+        }
+
+        .light .info-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+        }
+
+        .dark .info-item {
+            background: #495057;
+            border: 1px solid #6c757d;
+        }
+
+        .info-label {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body class="light">
@@ -231,18 +415,52 @@
             <span id="userEmail"></span>
             <span id="userRole" class="user-role"></span>
             <button id="themeToggle" class="theme-btn admin-only">🌙 Dark Mode</button>
+            <button id="myProfile" class="feature-btn">👤 Profile</button>
             <button id="manageUsers" class="admin-btn admin-only">👥 Manage Users</button>
             <button id="logout" class="logout-btn">Logout</button>
         </div>
     </header>
     
     <div class="container">
+        <!-- Welcome Card -->
         <div class="card">
-            <h2>Welcome to your Dashboard</h2>
+            <h2>Welcome back, <span id="welcomeName"></span>! 👋</h2>
             <p>You are successfully logged in!</p>
             <p><strong>Account Type:</strong> <span id="accountType"></span></p>
+            <p><strong>Last Login:</strong> <span id="lastLogin"></span></p>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="card">
+            <h2>🚀 Quick Actions</h2>
+            <div class="features-grid">
+                <div class="feature-card" onclick="openModal('profileModal')">
+                    <div class="feature-icon">👤</div>
+                    <div class="feature-title">My Profile</div>
+                    <div class="feature-desc">View and manage your account information</div>
+                </div>
+                
+                <div class="feature-card" onclick="openModal('activityModal')">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">Activity Log</div>
+                    <div class="feature-desc">Track your recent activities and sessions</div>
+                </div>
+                
+                <div class="feature-card" onclick="openModal('settingsModal')">
+                    <div class="feature-icon">⚙️</div>
+                    <div class="feature-title">Settings</div>
+                    <div class="feature-desc">Customize your dashboard preferences</div>
+                </div>
+                
+                <div class="feature-card admin-only" onclick="openModal('analyticsModal')">
+                    <div class="feature-icon">📈</div>
+                    <div class="feature-title">Analytics</div>
+                    <div class="feature-desc">View platform statistics and insights</div>
+                </div>
+            </div>
         </div>
         
+        <!-- Admin Panel -->
         <div class="card admin-only">
             <h2>🔧 Admin Panel</h2>
             <p>This section is only visible to administrators.</p>
@@ -252,6 +470,8 @@
                 <li>Manage user accounts and permissions</li>
                 <li>View all registered users</li>
                 <li>Promote/demote admin status</li>
+                <li>Delete user accounts</li>
+                <li>View platform analytics</li>
             </ul>
         </div>
 
@@ -293,9 +513,90 @@
         </div>
     </div>
 
+    <!-- Modals -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('profileModal')">×</button>
+            <h2>👤 My Profile</h2>
+            <div class="profile-info">
+                <div class="info-item">
+                    <div class="info-label">Email Address</div>
+                    <div id="profileEmail">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Account Type</div>
+                    <div id="profileType">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Member Since</div>
+                    <div id="profileCreated">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">User ID</div>
+                    <div id="profileId">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="activityModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('activityModal')">×</button>
+            <h2>📊 Recent Activity</h2>
+            <div id="activityLog">
+                <div class="activity-item">
+                    <div>🔐 Logged in successfully</div>
+                    <div class="activity-time" id="loginTime">-</div>
+                </div>
+                <div class="activity-item">
+                    <div>👤 Profile viewed</div>
+                    <div class="activity-time">Just now</div>
+                </div>
+                <div class="activity-item admin-only">
+                    <div>👥 User management accessed</div>
+                    <div class="activity-time">Earlier today</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('settingsModal')">×</button>
+            <h2>⚙️ Settings</h2>
+            <p><strong>Theme Preference:</strong></p>
+            <p>Light/Dark theme toggle is available in the header.</p>
+            <p style="margin-top: 1rem;"><strong>Notifications:</strong></p>
+            <p>Dashboard notifications are currently enabled.</p>
+            <p style="margin-top: 1rem;"><strong>Language:</strong></p>
+            <p>English (US) - Default</p>
+        </div>
+    </div>
+
+    <div id="analyticsModal" class="modal admin-only">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('analyticsModal')">×</button>
+            <h2>📈 Platform Analytics</h2>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="analyticsUsers">-</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="analyticsLogins">-</div>
+                    <div class="stat-label">Today's Logins</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="analyticsNewUsers">-</div>
+                    <div class="stat-label">New This Week</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
-        import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+        import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyAt_HJiP_uuWC7-AqMKlfLwjQFsESjB364",
@@ -317,16 +618,45 @@
         }
 
         // Set user info
+        const emailName = userData.email.split('@')[0];
         document.getElementById('userEmail').textContent = userData.email;
+        document.getElementById('welcomeName').textContent = emailName;
         const isAdmin = userData.isAdmin === 1;
         
         document.getElementById('userRole').textContent = isAdmin ? 'Admin' : 'User';
         document.getElementById('accountType').textContent = isAdmin ? 'Administrator' : 'Standard User';
+        document.getElementById('lastLogin').textContent = new Date().toLocaleString();
+        document.getElementById('loginTime').textContent = new Date().toLocaleString();
         
         if (isAdmin) {
             document.getElementById('userRole').classList.add('admin-role');
             document.body.classList.add('admin');
         }
+
+        // Profile Modal Data
+        document.getElementById('profileEmail').textContent = userData.email;
+        document.getElementById('profileType').textContent = isAdmin ? 'Administrator' : 'Standard User';
+        document.getElementById('profileId').textContent = userData.id || 'N/A';
+        document.getElementById('profileCreated').textContent = 'Member since account creation';
+
+        // Modal Functions
+        window.openModal = function(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+            if (modalId === 'analyticsModal') {
+                updateAnalytics();
+            }
+        };
+
+        window.closeModal = function(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        };
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        };
 
         // Theme toggle (admin only)
         let isDark = false;
@@ -334,6 +664,11 @@
             isDark = !isDark;
             document.body.className = isDark ? 'dark admin' : 'light admin';
             document.getElementById('themeToggle').textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+        });
+
+        // Profile button
+        document.getElementById('myProfile').addEventListener('click', () => {
+            openModal('profileModal');
         });
 
         // User Management Functions
@@ -390,6 +725,9 @@
                                     ⬇️ Remove Admin
                                 </button>`
                             }
+                            <button class="action-btn delete-btn" onclick="deleteUser('${user.id}', '${user.email}')">
+                                🗑️ Delete
+                            </button>
                         ` : '<em>Current User</em>'}
                     </td>
                 `;
@@ -410,7 +748,14 @@
             document.getElementById('totalRegularUsers').textContent = totalRegularUsers;
         }
 
-        // Make function global so it can be called from onclick
+        function updateAnalytics() {
+            // Simulate some analytics data
+            document.getElementById('analyticsUsers').textContent = document.getElementById('totalUsers').textContent;
+            document.getElementById('analyticsLogins').textContent = Math.floor(Math.random() * 50) + 10;
+            document.getElementById('analyticsNewUsers').textContent = Math.floor(Math.random() * 10) + 1;
+        }
+
+        // Make functions global
         window.changeUserStatus = async function(userId, newStatus) {
             try {
                 const userRef = doc(db, "users", userId);
@@ -418,15 +763,26 @@
                     isAdmin: newStatus
                 });
                 
-                // Show success message
                 const statusText = newStatus === 1 ? 'promoted to admin' : 'demoted to user';
-                alert(`User successfully ${statusText}!`);
+                alert(`✅ User successfully ${statusText}!`);
                 
-                // Reload users
                 loadUsers();
             } catch (error) {
                 console.error("Error updating user:", error);
-                alert("Error updating user: " + error.message);
+                alert("❌ Error updating user: " + error.message);
+            }
+        };
+
+        window.deleteUser = async function(userId, userEmail) {
+            if (confirm(`⚠️ Are you sure you want to delete the user "${userEmail}"?\n\nThis action cannot be undone.`)) {
+                try {
+                    await deleteDoc(doc(db, "users", userId));
+                    alert(`✅ User "${userEmail}" has been deleted successfully.`);
+                    loadUsers();
+                } catch (error) {
+                    console.error("Error deleting user:", error);
+                    alert("❌ Error deleting user: " + error.message);
+                }
             }
         };
 
