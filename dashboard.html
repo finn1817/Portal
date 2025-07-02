@@ -84,12 +84,30 @@
             color: white;
         }
         
+        .admin-btn {
+            background: #28a745;
+            color: white;
+        }
+        
         .admin-only {
             display: none;
         }
         
         .admin .admin-only {
             display: block;
+        }
+
+        .user-role {
+            background: #6c757d;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+
+        .admin-role {
+            background: #28a745;
         }
     </style>
 </head>
@@ -98,8 +116,9 @@
         <h1>Dashboard</h1>
         <div>
             <span id="userEmail"></span>
-            <span id="userRole"></span>
+            <span id="userRole" class="user-role"></span>
             <button id="themeToggle" class="theme-btn admin-only">🌙 Dark Mode</button>
+            <button id="manageUsers" class="admin-btn admin-only">👥 Manage Users</button>
             <button id="logout" class="logout-btn">Logout</button>
         </div>
     </header>
@@ -108,12 +127,25 @@
         <div class="card">
             <h2>Welcome to your Dashboard</h2>
             <p>You are successfully logged in!</p>
+            <p><strong>Account Type:</strong> <span id="accountType"></span></p>
         </div>
         
         <div class="card admin-only">
-            <h2>Admin Panel</h2>
+            <h2>🔧 Admin Panel</h2>
             <p>This section is only visible to administrators.</p>
-            <p>You can toggle between light and dark themes using the button above.</p>
+            <p>As an admin, you can:</p>
+            <ul style="margin-left: 2rem; margin-top: 1rem;">
+                <li>Toggle between light and dark themes</li>
+                <li>Manage user accounts and permissions</li>
+                <li>View all registered users</li>
+                <li>Promote/demote admin status</li>
+            </ul>
+        </div>
+
+        <!-- Future: User Management Section (we'll add this later) -->
+        <div id="userManagement" class="card admin-only" style="display: none;">
+            <h2>👥 User Management</h2>
+            <p>Coming soon: View and manage all users</p>
         </div>
     </div>
 
@@ -126,10 +158,17 @@
 
         // Set user info
         document.getElementById('userEmail').textContent = userData.email;
-        document.getElementById('userRole').textContent = userData.isAdmin ? ' (Admin)' : ' (User)';
+        const isAdmin = userData.isAdmin === 1;
+        
+        document.getElementById('userRole').textContent = isAdmin ? 'Admin' : 'User';
+        document.getElementById('accountType').textContent = isAdmin ? 'Administrator' : 'Standard User';
+        
+        if (isAdmin) {
+            document.getElementById('userRole').classList.add('admin-role');
+        }
 
         // Add admin class if user is admin
-        if (userData.isAdmin) {
+        if (isAdmin) {
             document.body.classList.add('admin');
         }
 
@@ -139,6 +178,11 @@
             isDark = !isDark;
             document.body.className = isDark ? 'dark admin' : 'light admin';
             document.getElementById('themeToggle').textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+        });
+
+        // Manage Users button (placeholder for future feature)
+        document.getElementById('manageUsers').addEventListener('click', () => {
+            alert('User management feature coming soon!\n\nThis will allow you to:\n• View all users\n• Change admin status\n• Manage accounts');
         });
 
         // Logout
