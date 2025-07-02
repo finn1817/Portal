@@ -114,7 +114,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Add initial non-admin user (run this once)
+        // Add initial admin user (run this once)
         async function addInitialUser() {
             try {
                 const docRef = await addDoc(collection(db, "users"), {
