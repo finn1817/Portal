@@ -109,6 +109,119 @@
         .admin-role {
             background: #28a745;
         }
+
+        /* User Management Styles */
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .user-table th,
+        .user-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .dark .user-table th,
+        .dark .user-table td {
+            border-bottom-color: #444;
+        }
+
+        .user-table th {
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-admin {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-user {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .dark .status-admin {
+            background: #28a745;
+            color: white;
+        }
+
+        .dark .status-user {
+            background: #6c757d;
+            color: white;
+        }
+
+        .action-btn {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+            margin: 0 0.25rem;
+        }
+
+        .promote-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .demote-btn {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+
+        .close-btn {
+            background: #6c757d;
+            color: white;
+            float: right;
+            margin: 0 0 1rem 0;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .light .stat-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+        }
+
+        .dark .stat-card {
+            background: #495057;
+            border: 1px solid #6c757d;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
     </style>
 </head>
 <body class="light">
@@ -142,14 +255,61 @@
             </ul>
         </div>
 
-        <!-- Future: User Management Section (we'll add this later) -->
+        <!-- User Management Section -->
         <div id="userManagement" class="card admin-only" style="display: none;">
+            <button id="closeUserManagement" class="close-btn">✕ Close</button>
             <h2>👥 User Management</h2>
-            <p>Coming soon: View and manage all users</p>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalUsers">-</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalAdmins">-</div>
+                    <div class="stat-label">Administrators</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalRegularUsers">-</div>
+                    <div class="stat-label">Regular Users</div>
+                </div>
+            </div>
+
+            <div id="usersLoading" class="loading">Loading users...</div>
+            <div id="usersContainer" style="display: none;">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+        import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAt_HJiP_uuWC7-AqMKlfLwjQFsESjB364",
+            authDomain: "my-admin-dashboard-b9c89.firebaseapp.com",
+            projectId: "my-admin-dashboard-b9c89",
+            storageBucket: "my-admin-dashboard-b9c89.firebasestorage.app",
+            messagingSenderId: "1001105953619",
+            appId: "1:1001105953619:web:1e2cf52a9ff37aeb5207a6",
+            measurementId: "G-DGTX5YCKYF"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         // Check if user is logged in
         const userData = JSON.parse(localStorage.getItem('user'));
         if (!userData) {
@@ -165,10 +325,6 @@
         
         if (isAdmin) {
             document.getElementById('userRole').classList.add('admin-role');
-        }
-
-        // Add admin class if user is admin
-        if (isAdmin) {
             document.body.classList.add('admin');
         }
 
@@ -180,9 +336,109 @@
             document.getElementById('themeToggle').textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
         });
 
-        // Manage Users button (placeholder for future feature)
+        // User Management Functions
+        async function loadUsers() {
+            try {
+                const usersQuery = query(collection(db, "users"), orderBy("email"));
+                const querySnapshot = await getDocs(usersQuery);
+                
+                const users = [];
+                querySnapshot.forEach((doc) => {
+                    users.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+
+                displayUsers(users);
+                updateStats(users);
+            } catch (error) {
+                console.error("Error loading users:", error);
+                document.getElementById('usersLoading').textContent = "Error loading users: " + error.message;
+            }
+        }
+
+        function displayUsers(users) {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                const isCurrentUser = user.email === userData.email;
+                const userIsAdmin = user.isAdmin === 1;
+                
+                row.innerHTML = `
+                    <td>
+                        ${user.email}
+                        ${isCurrentUser ? '<small style="color: #007bff;"> (You)</small>' : ''}
+                    </td>
+                    <td>
+                        <span class="status-badge ${userIsAdmin ? 'status-admin' : 'status-user'}">
+                            ${userIsAdmin ? 'Administrator' : 'User'}
+                        </span>
+                    </td>
+                    <td>
+                        ${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                    </td>
+                    <td>
+                        ${!isCurrentUser ? `
+                            ${!userIsAdmin ? 
+                                `<button class="action-btn promote-btn" onclick="changeUserStatus('${user.id}', 1)">
+                                    ⬆️ Make Admin
+                                </button>` : 
+                                `<button class="action-btn demote-btn" onclick="changeUserStatus('${user.id}', 0)">
+                                    ⬇️ Remove Admin
+                                </button>`
+                            }
+                        ` : '<em>Current User</em>'}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.getElementById('usersLoading').style.display = 'none';
+            document.getElementById('usersContainer').style.display = 'block';
+        }
+
+        function updateStats(users) {
+            const totalUsers = users.length;
+            const totalAdmins = users.filter(u => u.isAdmin === 1).length;
+            const totalRegularUsers = totalUsers - totalAdmins;
+
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('totalAdmins').textContent = totalAdmins;
+            document.getElementById('totalRegularUsers').textContent = totalRegularUsers;
+        }
+
+        // Make function global so it can be called from onclick
+        window.changeUserStatus = async function(userId, newStatus) {
+            try {
+                const userRef = doc(db, "users", userId);
+                await updateDoc(userRef, {
+                    isAdmin: newStatus
+                });
+                
+                // Show success message
+                const statusText = newStatus === 1 ? 'promoted to admin' : 'demoted to user';
+                alert(`User successfully ${statusText}!`);
+                
+                // Reload users
+                loadUsers();
+            } catch (error) {
+                console.error("Error updating user:", error);
+                alert("Error updating user: " + error.message);
+            }
+        };
+
+        // Manage Users button
         document.getElementById('manageUsers').addEventListener('click', () => {
-            alert('User management feature coming soon!\n\nThis will allow you to:\n• View all users\n• Change admin status\n• Manage accounts');
+            document.getElementById('userManagement').style.display = 'block';
+            loadUsers();
+        });
+
+        // Close User Management
+        document.getElementById('closeUserManagement').addEventListener('click', () => {
+            document.getElementById('userManagement').style.display = 'none';
         });
 
         // Logout
