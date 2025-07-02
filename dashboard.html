@@ -313,16 +313,19 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.5);
+            overflow-y: auto;
         }
 
         .modal-content {
             background-color: white;
-            margin: 10% auto;
+            margin: 2% auto;
             padding: 2rem;
             border-radius: 8px;
-            width: 90%;
-            max-width: 500px;
+            width: 95%;
+            max-width: 1000px;
             position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .dark .modal-content {
@@ -392,6 +395,132 @@
             margin-bottom: 0.5rem;
         }
 
+        /* Workplace Management Styles */
+        .workplace-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .workplace-card {
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .workplace-card:hover {
+            transform: translateY(-3px);
+            border-color: #007bff;
+        }
+
+        .workplace-card.selected {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .light .workplace-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+        }
+
+        .dark .workplace-card {
+            background: #495057;
+            border: 1px solid #6c757d;
+        }
+
+        .workplace-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .workplace-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .workplace-desc {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 2rem;
+        }
+
+        .dark .tabs {
+            border-bottom-color: #6c757d;
+        }
+
+        .tab {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            background: rgba(0,123,255,0.1);
+        }
+
+        .tab.active {
+            border-bottom-color: #007bff;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .worker-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+
+        .dark .worker-form {
+            border-color: #6c757d;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .dark .form-group input, 
+        .dark .form-group textarea, 
+        .dark .form-group select {
+            background: #495057;
+            border-color: #6c757d;
+            color: white;
+        }
+
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
@@ -403,6 +532,10 @@
             }
             
             .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .workplace-selector {
                 grid-template-columns: 1fr;
             }
         }
@@ -458,12 +591,11 @@
                     <div class="feature-desc">View platform statistics and insights</div>
                 </div>
 
-                <!-- NEW: Admin-only workplace management -->
                 <div class="feature-card admin-only" onclick="openModal('workplaceManagementModal')">
                     <div class="feature-icon">🏗️</div>
                     <div class="feature-title">Workplace Management</div>
                     <div class="feature-desc">Manage all workplaces, workers, and schedules</div>
-                </div>               
+                </div>
             </div>
         </div>
         
@@ -479,6 +611,9 @@
                 <li>Promote/demote admin status</li>
                 <li>Delete user accounts</li>
                 <li>View platform analytics</li>
+                <li><strong>🏢 Manage all 3 workplaces</strong></li>
+                <li><strong>👥 Manage workplace workers</strong></li>
+                <li><strong>📅 Generate and view schedules</strong></li>
             </ul>
         </div>
 
@@ -601,10 +736,129 @@
         </div>
     </div>
 
+    <!-- NEW: Workplace Management Modal -->
+    <div id="workplaceManagementModal" class="modal admin-only">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('workplaceManagementModal')">×</button>
+            <h2>🏗️ Workplace Management</h2>
+            
+            <!-- Workplace Selector -->
+            <h3>Select Workplace</h3>
+            <div class="workplace-selector">
+                <div class="workplace-card" onclick="selectWorkplace('esports_lounge')">
+                    <div class="workplace-icon">🎮</div>
+                    <div class="workplace-name">eSports Lounge</div>
+                    <div class="workplace-desc">Gaming tournaments and casual play</div>
+                </div>
+                
+                <div class="workplace-card" onclick="selectWorkplace('esports_arena')">
+                    <div class="workplace-icon">🏟️</div>
+                    <div class="workplace-name">eSports Arena</div>
+                    <div class="workplace-desc">Competitive gaming events</div>
+                </div>
+                
+                <div class="workplace-card" onclick="selectWorkplace('it_service_center')">
+                    <div class="workplace-icon">💻</div>
+                    <div class="workplace-name">IT Service Center</div>
+                    <div class="workplace-desc">Technical support and services</div>
+                </div>
+            </div>
+
+            <!-- Workplace Management Content -->
+            <div id="workplaceContent" style="display: none;">
+                <hr style="margin: 2rem 0;">
+                <h3 id="selectedWorkplaceName">-</h3>
+                
+                <!-- Tabs -->
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('workers')">👥 Workers</div>
+                    <div class="tab" onclick="switchTab('schedule')">📅 Schedule</div>
+                    <div class="tab" onclick="switchTab('hours')">⏰ Hours</div>
+                </div>
+
+                <!-- Workers Tab -->
+                <div id="workersTab" class="tab-content active">
+                    <h4>Manage Workers</h4>
+                    
+                    <!-- Add Worker Form -->
+                    <div class="worker-form">
+                        <div class="form-group">
+                            <label>First Name</label>
+                            <input type="text" id="workerFirstName" placeholder="John">
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name</label>
+                            <input type="text" id="workerLastName" placeholder="Doe">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="workerEmail" placeholder="john@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Work Study</label>
+                            <select id="workerWorkStudy">
+                                <option value="false">No</option>
+                                <option value="true">Yes</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>Availability</label>
+                            <textarea id="workerAvailability" rows="3" placeholder="Monday 12:00-15:00, Tuesday 20:00-00:00"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <button onclick="addWorker()" style="background: #28a745; color: white; padding: 0.75rem; border: none; border-radius: 4px; cursor: pointer;">
+                                ➕ Add Worker
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Workers List -->
+                    <div id="workersLoading" class="loading">Loading workers...</div>
+                    <div id="workersContainer" style="display: none;">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Work Study</th>
+                                    <th>Availability</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="workersTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Schedule Tab -->
+                <div id="scheduleTab" class="tab-content">
+                    <h4>Schedule Management</h4>
+                    <button onclick="generateSchedule()" style="background: #007bff; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 1rem;">
+                        🔄 Generate New Schedule
+                    </button>
+                    <div id="scheduleContent">
+                        <p>Select a workplace and click "Generate New Schedule" to create a schedule.</p>
+                    </div>
+                </div>
+
+                <!-- Hours Tab -->
+                <div id="hoursTab" class="tab-content">
+                    <h4>Hours of Operation</h4>
+                    <p>Manage operating hours for this workplace.</p>
+                    <div id="hoursContent">
+                        <p>Hours management coming soon...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
-        import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+        import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
+        // User Management Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyAt_HJiP_uuWC7-AqMKlfLwjQFsESjB364",
             authDomain: "my-admin-dashboard-b9c89.firebaseapp.com",
@@ -615,8 +869,31 @@
             measurementId: "G-DGTX5YCKYF"
         };
 
+        // Workplace Firebase Config (your existing database)
+        const workplaceFirebaseConfig = {
+            // ADD YOUR WORKPLACE FIREBASE CONFIG HERE
+            // This should be your existing Firebase project with the workplace collections
+            apiKey: "YOUR_WORKPLACE_FIREBASE_API_KEY",
+            authDomain: "YOUR_WORKPLACE_PROJECT.firebaseapp.com",
+            projectId: "YOUR_WORKPLACE_PROJECT_ID",
+            storageBucket: "YOUR_WORKPLACE_PROJECT.firebasestorage.app",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+
+        // Initialize workplace database (you'll need to add your config above)
+        // const workplaceApp = initializeApp(workplaceFirebaseConfig, "workplace");
+        // const workplaceDb = getFirestore(workplaceApp);
+
+        // For now, we'll use the same database with different collections
+        const workplaceDb = db;
+
+        // Global variables
+        let selectedWorkplace = null;
+        let currentWorkplaceData = null;
 
         // Check if user is logged in
         const userData = JSON.parse(localStorage.getItem('user'));
@@ -665,6 +942,193 @@
             }
         };
 
+        // Workplace Management Functions
+        window.selectWorkplace = function(workplace) {
+            selectedWorkplace = workplace;
+            
+            // Update visual selection
+            document.querySelectorAll('.workplace-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.workplace-card').classList.add('selected');
+            
+            // Show workplace content
+            document.getElementById('workplaceContent').style.display = 'block';
+            
+            // Update workplace name
+            const names = {
+                'esports_lounge': '🎮 eSports Lounge',
+                'esports_arena': '🏟️ eSports Arena',
+                'it_service_center': '💻 IT Service Center'
+            };
+            document.getElementById('selectedWorkplaceName').textContent = names[workplace];
+            
+            // Load workplace data
+            loadWorkplaceData(workplace);
+        };
+
+        window.switchTab = function(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        };
+
+        // Load workplace data from Firebase
+        async function loadWorkplaceData(workplace) {
+            try {
+                // Load workers
+                loadWorkers(workplace);
+                
+                // You can add loading schedules and hours here
+                console.log(`Loading data for ${workplace}`);
+            } catch (error) {
+                console.error('Error loading workplace data:', error);
+            }
+        }
+
+        // Load workers for selected workplace
+        async function loadWorkers(workplace) {
+            try {
+                document.getElementById('workersLoading').style.display = 'block';
+                document.getElementById('workersContainer').style.display = 'none';
+                
+                const workersQuery = query(collection(workplaceDb, workplace));
+                const querySnapshot = await getDocs(workersQuery);
+                
+                const workers = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    // Only include worker documents (not metadata)
+                    if (data.email && data.first_name) {
+                        workers.push({
+                            id: doc.id,
+                            ...data
+                        });
+                    }
+                });
+
+                displayWorkers(workers);
+            } catch (error) {
+                console.error('Error loading workers:', error);
+                document.getElementById('workersLoading').textContent = 'Error loading workers: ' + error.message;
+            }
+        }
+
+        // Display workers in table
+        function displayWorkers(workers) {
+            const tbody = document.getElementById('workersTableBody');
+            tbody.innerHTML = '';
+
+            workers.forEach(worker => {
+                const row = document.createElement('tr');
+                const availability = worker.days_times_available || 'Not set';
+                
+                row.innerHTML = `
+                    <td>${worker.first_name} ${worker.last_name}</td>
+                    <td>${worker.email}</td>
+                    <td>
+                        <span class="status-badge ${worker.work_study ? 'status-admin' : 'status-user'}">
+                            ${worker.work_study ? 'Yes' : 'No'}
+                        </span>
+                    </td>
+                    <td style="max-width: 200px; word-wrap: break-word;">${availability}</td>
+                    <td>
+                        <button class="action-btn delete-btn" onclick="deleteWorker('${worker.id}', '${worker.first_name} ${worker.last_name}')">
+                            🗑️ Delete
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.getElementById('workersLoading').style.display = 'none';
+            document.getElementById('workersContainer').style.display = 'block';
+        }
+
+        // Add new worker
+        window.addWorker = async function() {
+            if (!selectedWorkplace) {
+                alert('Please select a workplace first.');
+                return;
+            }
+
+            const firstName = document.getElementById('workerFirstName').value;
+            const lastName = document.getElementById('workerLastName').value;
+            const email = document.getElementById('workerEmail').value;
+            const workStudy = document.getElementById('workerWorkStudy').value === 'true';
+            const availability = document.getElementById('workerAvailability').value;
+
+            if (!firstName || !lastName || !email) {
+                alert('Please fill in all required fields (First Name, Last Name, Email).');
+                return;
+            }
+
+            try {
+                await addDoc(collection(workplaceDb, selectedWorkplace), {
+                    first_name: firstName,
+                    last_name: lastName,
+                    email: email,
+                    work_study: workStudy,
+                    days_times_available: availability,
+                    created_at: new Date().toISOString()
+                });
+
+                alert('✅ Worker added successfully!');
+                
+                // Clear form
+                document.getElementById('workerFirstName').value = '';
+                document.getElementById('workerLastName').value = '';
+                document.getElementById('workerEmail').value = '';
+                document.getElementById('workerWorkStudy').value = 'false';
+                document.getElementById('workerAvailability').value = '';
+                
+                // Reload workers
+                loadWorkers(selectedWorkplace);
+            } catch (error) {
+                console.error('Error adding worker:', error);
+                alert('❌ Error adding worker: ' + error.message);
+            }
+        };
+
+        // Delete worker
+        window.deleteWorker = async function(workerId, workerName) {
+            if (confirm(`⚠️ Are you sure you want to delete "${workerName}"?\n\nThis action cannot be undone.`)) {
+                try {
+                    await deleteDoc(doc(workplaceDb, selectedWorkplace, workerId));
+                    alert(`✅ Worker "${workerName}" has been deleted successfully.`);
+                    loadWorkers(selectedWorkplace);
+                } catch (error) {
+                    console.error('Error deleting worker:', error);
+                    alert('❌ Error deleting worker: ' + error.message);
+                }
+            }
+        };
+
+        // Generate schedule (placeholder for now)
+        window.generateSchedule = function() {
+            if (!selectedWorkplace) {
+                alert('Please select a workplace first.');
+                return;
+            }
+            
+            document.getElementById('scheduleContent').innerHTML = `
+                <div class="loading">Generating schedule for ${selectedWorkplace}...</div>
+            `;
+            
+            // Simulate schedule generation
+            setTimeout(() => {
+                document.getElementById('scheduleContent').innerHTML = `
+                    <h4>Generated Schedule</h4>
+                    <p>Schedule generation will be implemented with your Python logic converted to JavaScript.</p>
+                    <p>This will read workers' availability and hours of operation to create optimal schedules.</p>
+                `;
+            }, 2000);
+        };
+
         // Theme toggle (admin only)
         let isDark = false;
         document.getElementById('themeToggle').addEventListener('click', () => {
@@ -678,7 +1142,7 @@
             openModal('profileModal');
         });
 
-        // User Management Functions
+        // User Management Functions (existing code)
         async function loadUsers() {
             try {
                 const usersQuery = query(collection(db, "users"), orderBy("email"));
@@ -756,7 +1220,6 @@
         }
 
         function updateAnalytics() {
-            // Simulate some analytics data
             document.getElementById('analyticsUsers').textContent = document.getElementById('totalUsers').textContent;
             document.getElementById('analyticsLogins').textContent = Math.floor(Math.random() * 50) + 10;
             document.getElementById('analyticsNewUsers').textContent = Math.floor(Math.random() * 10) + 1;
