@@ -698,6 +698,10 @@
                     <div>👥 User management accessed</div>
                     <div class="activity-time">Earlier today</div>
                 </div>
+                <div class="activity-item admin-only">
+                    <div>🏢 Workplace management accessed</div>
+                    <div class="activity-time">Recently</div>
+                </div>
             </div>
         </div>
     </div>
@@ -736,7 +740,7 @@
         </div>
     </div>
 
-    <!-- NEW: Workplace Management Modal -->
+    <!-- Workplace Management Modal -->
     <div id="workplaceManagementModal" class="modal admin-only">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('workplaceManagementModal')">×</button>
@@ -783,15 +787,15 @@
                     <!-- Add Worker Form -->
                     <div class="worker-form">
                         <div class="form-group">
-                            <label>First Name</label>
+                            <label>First Name *</label>
                             <input type="text" id="workerFirstName" placeholder="John">
                         </div>
                         <div class="form-group">
-                            <label>Last Name</label>
+                            <label>Last Name *</label>
                             <input type="text" id="workerLastName" placeholder="Doe">
                         </div>
                         <div class="form-group">
-                            <label>Email</label>
+                            <label>Email *</label>
                             <input type="email" id="workerEmail" placeholder="john@example.com">
                         </div>
                         <div class="form-group">
@@ -858,8 +862,8 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
         import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
-        // User Management Firebase Config
-        const firebaseConfig = {
+        // User Management Firebase Config (existing - for login/admin system)
+        const userFirebaseConfig = {
             apiKey: "AIzaSyAt_HJiP_uuWC7-AqMKlfLwjQFsESjB364",
             authDomain: "my-admin-dashboard-b9c89.firebaseapp.com",
             projectId: "my-admin-dashboard-b9c89",
@@ -869,27 +873,24 @@
             measurementId: "G-DGTX5YCKYF"
         };
 
-        // Workplace Firebase Config (your existing database)
+        // Workplace Firebase Config (your Python app's database)
         const workplaceFirebaseConfig = {
-            // ADD YOUR WORKPLACE FIREBASE CONFIG HERE
-            // This should be your existing Firebase project with the workplace collections
-            apiKey: "YOUR_WORKPLACE_FIREBASE_API_KEY",
-            authDomain: "YOUR_WORKPLACE_PROJECT.firebaseapp.com",
-            projectId: "YOUR_WORKPLACE_PROJECT_ID",
-            storageBucket: "YOUR_WORKPLACE_PROJECT.firebasestorage.app",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyBkkq4nPnmyfSOKtVLsO95rpAUsMDA1o0A",
+            authDomain: "workplace-scheduler-ace38.firebaseapp.com",
+            projectId: "workplace-scheduler-ace38",
+            storageBucket: "workplace-scheduler-ace38.firebasestorage.app",
+            messagingSenderId: "153631302747",
+            appId: "1:153631302747:web:2c731351893dca19510b7e",
+            measurementId: "G-THHV6M3Z88"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        // Initialize both Firebase apps
+        const userApp = initializeApp(userFirebaseConfig, "users");
+        const workplaceApp = initializeApp(workplaceFirebaseConfig, "workplace");
 
-        // Initialize workplace database (you'll need to add your config above)
-        // const workplaceApp = initializeApp(workplaceFirebaseConfig, "workplace");
-        // const workplaceDb = getFirestore(workplaceApp);
-
-        // For now, we'll use the same database with different collections
-        const workplaceDb = db;
+        // Get database instances
+        const userDb = getFirestore(userApp);
+        const workplaceDb = getFirestore(workplaceApp);
 
         // Global variables
         let selectedWorkplace = null;
@@ -980,13 +981,10 @@
         // Load workplace data from Firebase
         async function loadWorkplaceData(workplace) {
             try {
-                // Load workers
+                console.log(`🔍 Loading data for ${workplace} from workplace database`);
                 loadWorkers(workplace);
-                
-                // You can add loading schedules and hours here
-                console.log(`Loading data for ${workplace}`);
             } catch (error) {
-                console.error('Error loading workplace data:', error);
+                console.error('❌ Error loading workplace data:', error);
             }
         }
 
@@ -996,13 +994,15 @@
                 document.getElementById('workersLoading').style.display = 'block';
                 document.getElementById('workersContainer').style.display = 'none';
                 
+                console.log(`🔍 Querying collection: ${workplace}`);
                 const workersQuery = query(collection(workplaceDb, workplace));
                 const querySnapshot = await getDocs(workersQuery);
                 
                 const workers = [];
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    // Only include worker documents (not metadata)
+                    console.log('📄 Document data:', data);
+                    // Only include worker documents (filter out metadata)
                     if (data.email && data.first_name) {
                         workers.push({
                             id: doc.id,
@@ -1011,9 +1011,10 @@
                     }
                 });
 
+                console.log(`✅ Found ${workers.length} workers in ${workplace}`);
                 displayWorkers(workers);
             } catch (error) {
-                console.error('Error loading workers:', error);
+                console.error('❌ Error loading workers:', error);
                 document.getElementById('workersLoading').textContent = 'Error loading workers: ' + error.message;
             }
         }
@@ -1023,27 +1024,31 @@
             const tbody = document.getElementById('workersTableBody');
             tbody.innerHTML = '';
 
-            workers.forEach(worker => {
-                const row = document.createElement('tr');
-                const availability = worker.days_times_available || 'Not set';
-                
-                row.innerHTML = `
-                    <td>${worker.first_name} ${worker.last_name}</td>
-                    <td>${worker.email}</td>
-                    <td>
-                        <span class="status-badge ${worker.work_study ? 'status-admin' : 'status-user'}">
-                            ${worker.work_study ? 'Yes' : 'No'}
-                        </span>
-                    </td>
-                    <td style="max-width: 200px; word-wrap: break-word;">${availability}</td>
-                    <td>
-                        <button class="action-btn delete-btn" onclick="deleteWorker('${worker.id}', '${worker.first_name} ${worker.last_name}')">
-                            🗑️ Delete
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
+            if (workers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: #6c757d;">No workers found. Add some workers to get started!</td></tr>';
+            } else {
+                workers.forEach(worker => {
+                    const row = document.createElement('tr');
+                    const availability = worker.days_times_available || 'Not set';
+                    
+                    row.innerHTML = `
+                        <td>${worker.first_name} ${worker.last_name}</td>
+                        <td>${worker.email}</td>
+                        <td>
+                            <span class="status-badge ${worker.work_study ? 'status-admin' : 'status-user'}">
+                                ${worker.work_study ? 'Yes' : 'No'}
+                            </span>
+                        </td>
+                        <td style="max-width: 200px; word-wrap: break-word;">${availability}</td>
+                        <td>
+                            <button class="action-btn delete-btn" onclick="deleteWorker('${worker.id}', '${worker.first_name} ${worker.last_name}')">
+                                🗑️ Delete
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
 
             document.getElementById('workersLoading').style.display = 'none';
             document.getElementById('workersContainer').style.display = 'block';
@@ -1056,11 +1061,11 @@
                 return;
             }
 
-            const firstName = document.getElementById('workerFirstName').value;
-            const lastName = document.getElementById('workerLastName').value;
-            const email = document.getElementById('workerEmail').value;
+            const firstName = document.getElementById('workerFirstName').value.trim();
+            const lastName = document.getElementById('workerLastName').value.trim();
+            const email = document.getElementById('workerEmail').value.trim();
             const workStudy = document.getElementById('workerWorkStudy').value === 'true';
-            const availability = document.getElementById('workerAvailability').value;
+            const availability = document.getElementById('workerAvailability').value.trim();
 
             if (!firstName || !lastName || !email) {
                 alert('Please fill in all required fields (First Name, Last Name, Email).');
@@ -1068,6 +1073,7 @@
             }
 
             try {
+                console.log(`➕ Adding worker to ${selectedWorkplace} collection`);
                 await addDoc(collection(workplaceDb, selectedWorkplace), {
                     first_name: firstName,
                     last_name: lastName,
@@ -1089,7 +1095,7 @@
                 // Reload workers
                 loadWorkers(selectedWorkplace);
             } catch (error) {
-                console.error('Error adding worker:', error);
+                console.error('❌ Error adding worker:', error);
                 alert('❌ Error adding worker: ' + error.message);
             }
         };
@@ -1098,11 +1104,12 @@
         window.deleteWorker = async function(workerId, workerName) {
             if (confirm(`⚠️ Are you sure you want to delete "${workerName}"?\n\nThis action cannot be undone.`)) {
                 try {
+                    console.log(`🗑️ Deleting worker ${workerId} from ${selectedWorkplace}`);
                     await deleteDoc(doc(workplaceDb, selectedWorkplace, workerId));
                     alert(`✅ Worker "${workerName}" has been deleted successfully.`);
                     loadWorkers(selectedWorkplace);
                 } catch (error) {
-                    console.error('Error deleting worker:', error);
+                    console.error('❌ Error deleting worker:', error);
                     alert('❌ Error deleting worker: ' + error.message);
                 }
             }
@@ -1116,15 +1123,24 @@
             }
             
             document.getElementById('scheduleContent').innerHTML = `
-                <div class="loading">Generating schedule for ${selectedWorkplace}...</div>
+                <div class="loading">🔄 Generating schedule for ${selectedWorkplace}...</div>
             `;
             
             // Simulate schedule generation
             setTimeout(() => {
                 document.getElementById('scheduleContent').innerHTML = `
-                    <h4>Generated Schedule</h4>
-                    <p>Schedule generation will be implemented with your Python logic converted to JavaScript.</p>
-                    <p>This will read workers' availability and hours of operation to create optimal schedules.</p>
+                    <h4>📅 Generated Schedule</h4>
+                    <p><strong>Workplace:</strong> ${selectedWorkplace}</p>
+                    <p><strong>Status:</strong> Ready for implementation</p>
+                    <div style="margin-top: 1rem; padding: 1rem; border: 1px solid #e9ecef; border-radius: 4px;">
+                        <p>🔧 <strong>Next Steps:</strong></p>
+                        <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                            <li>Convert Python scheduling algorithm to JavaScript</li>
+                            <li>Read worker availability and hours of operation</li>
+                            <li>Generate optimal shift assignments</li>
+                            <li>Display interactive schedule grid</li>
+                        </ul>
+                    </div>
                 `;
             }, 2000);
         };
@@ -1142,10 +1158,10 @@
             openModal('profileModal');
         });
 
-        // User Management Functions (existing code)
+        // User Management Functions (using userDb)
         async function loadUsers() {
             try {
-                const usersQuery = query(collection(db, "users"), orderBy("email"));
+                const usersQuery = query(collection(userDb, "users"), orderBy("email"));
                 const querySnapshot = await getDocs(usersQuery);
                 
                 const users = [];
@@ -1225,10 +1241,10 @@
             document.getElementById('analyticsNewUsers').textContent = Math.floor(Math.random() * 10) + 1;
         }
 
-        // Make functions global
+        // User Management Functions (using userDb)
         window.changeUserStatus = async function(userId, newStatus) {
             try {
-                const userRef = doc(db, "users", userId);
+                const userRef = doc(userDb, "users", userId);
                 await updateDoc(userRef, {
                     isAdmin: newStatus
                 });
@@ -1246,7 +1262,7 @@
         window.deleteUser = async function(userId, userEmail) {
             if (confirm(`⚠️ Are you sure you want to delete the user "${userEmail}"?\n\nThis action cannot be undone.`)) {
                 try {
-                    await deleteDoc(doc(db, "users", userId));
+                    await deleteDoc(doc(userDb, "users", userId));
                     alert(`✅ User "${userEmail}" has been deleted successfully.`);
                     loadUsers();
                 } catch (error) {
@@ -1256,22 +1272,26 @@
             }
         };
 
-        // Manage Users button
+        // Event Listeners
         document.getElementById('manageUsers').addEventListener('click', () => {
             document.getElementById('userManagement').style.display = 'block';
             loadUsers();
         });
 
-        // Close User Management
         document.getElementById('closeUserManagement').addEventListener('click', () => {
             document.getElementById('userManagement').style.display = 'none';
         });
 
-        // Logout
         document.getElementById('logout').addEventListener('click', () => {
             localStorage.removeItem('user');
             window.location.href = 'index.html';
         });
+
+        // Console log for debugging
+        console.log('🔥 Dashboard loaded with dual Firebase setup:');
+        console.log('👥 User Database:', userFirebaseConfig.projectId);
+        console.log('🏢 Workplace Database:', workplaceFirebaseConfig.projectId);
+        console.log('👨‍💼 Current User:', userData);
     </script>
 </body>
 </html>
