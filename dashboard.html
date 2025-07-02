@@ -860,7 +860,7 @@
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
-        import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+        import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy, getDoc, setDoc, arrayUnion, arrayRemove } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
         // User Management Firebase Config (existing - for login/admin system)
         const userFirebaseConfig = {
@@ -988,38 +988,43 @@
             }
         }
 
-        // Load workers for selected workplace
+        // Load workers for selected workplace (UPDATED FOR YOUR STRUCTURE)
         async function loadWorkers(workplace) {
             try {
                 document.getElementById('workersLoading').style.display = 'block';
                 document.getElementById('workersContainer').style.display = 'none';
                 
-                console.log(`🔍 Querying collection: ${workplace}`);
-                const workersQuery = query(collection(workplaceDb, workplace));
-                const querySnapshot = await getDocs(workersQuery);
+                console.log(`🔍 Loading workers from settings document for ${workplace}`);
                 
-                const workers = [];
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    console.log('📄 Document data:', data);
-                    // Only include worker documents (filter out metadata)
-                    if (data.email && data.first_name) {
-                        workers.push({
-                            id: doc.id,
-                            ...data
-                        });
+                // Get the settings document which contains the nested workplace data
+                const settingsRef = doc(workplaceDb, "settings", "workplaces");
+                const settingsDoc = await getDoc(settingsRef);
+                
+                if (settingsDoc.exists()) {
+                    const data = settingsDoc.data();
+                    console.log('📄 Settings document data:', data);
+                    
+                    // Navigate to the specific workplace workers array
+                    const workplaceData = data[workplace];
+                    if (workplaceData && workplaceData.workers) {
+                        const workers = workplaceData.workers;
+                        console.log(`✅ Found ${workers.length} workers in ${workplace}`);
+                        displayWorkers(workers);
+                    } else {
+                        console.log(`❌ No workers found in ${workplace}`);
+                        displayWorkers([]);
                     }
-                });
-
-                console.log(`✅ Found ${workers.length} workers in ${workplace}`);
-                displayWorkers(workers);
+                } else {
+                    console.log('❌ Settings document does not exist');
+                    document.getElementById('workersLoading').textContent = 'Settings document not found';
+                }
             } catch (error) {
                 console.error('❌ Error loading workers:', error);
                 document.getElementById('workersLoading').textContent = 'Error loading workers: ' + error.message;
             }
         }
 
-        // Display workers in table
+        // Display workers in table (UPDATED FOR YOUR DATA STRUCTURE)
         function displayWorkers(workers) {
             const tbody = document.getElementById('workersTableBody');
             tbody.innerHTML = '';
@@ -1027,9 +1032,9 @@
             if (workers.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: #6c757d;">No workers found. Add some workers to get started!</td></tr>';
             } else {
-                workers.forEach(worker => {
+                workers.forEach((worker, index) => {
                     const row = document.createElement('tr');
-                    const availability = worker.days_times_available || 'Not set';
+                    const availability = worker.availability_text || 'Not set';
                     
                     row.innerHTML = `
                         <td>${worker.first_name} ${worker.last_name}</td>
@@ -1041,7 +1046,7 @@
                         </td>
                         <td style="max-width: 200px; word-wrap: break-word;">${availability}</td>
                         <td>
-                            <button class="action-btn delete-btn" onclick="deleteWorker('${worker.id}', '${worker.first_name} ${worker.last_name}')">
+                            <button class="action-btn delete-btn" onclick="deleteWorker(${index}, '${worker.first_name} ${worker.last_name}')">
                                 🗑️ Delete
                             </button>
                         </td>
@@ -1054,7 +1059,7 @@
             document.getElementById('workersContainer').style.display = 'block';
         }
 
-        // Add new worker
+        // Add new worker (UPDATED FOR YOUR STRUCTURE)
         window.addWorker = async function() {
             if (!selectedWorkplace) {
                 alert('Please select a workplace first.');
@@ -1073,14 +1078,25 @@
             }
 
             try {
-                console.log(`➕ Adding worker to ${selectedWorkplace} collection`);
-                await addDoc(collection(workplaceDb, selectedWorkplace), {
+                console.log(`➕ Adding worker to ${selectedWorkplace} workers array`);
+                
+                // Create the new worker object matching your structure
+                const newWorker = {
                     first_name: firstName,
                     last_name: lastName,
                     email: email,
                     work_study: workStudy,
-                    days_times_available: availability,
-                    created_at: new Date().toISOString()
+                    availability_text: availability,
+                    availability: parseAvailabilityText(availability) // Convert text to your nested structure
+                };
+
+                // Get reference to settings document
+                const settingsRef = doc(workplaceDb, "settings", "workplaces");
+                
+                // Add worker to the workers array using arrayUnion
+                const updatePath = `${selectedWorkplace}.workers`;
+                await updateDoc(settingsRef, {
+                    [updatePath]: arrayUnion(newWorker)
                 });
 
                 alert('✅ Worker added successfully!');
@@ -1100,14 +1116,73 @@
             }
         };
 
-        // Delete worker
-        window.deleteWorker = async function(workerId, workerName) {
+        // Parse availability text into your nested structure (simplified version)
+        function parseAvailabilityText(availabilityText) {
+            const availability = {};
+            if (!availabilityText) return availability;
+
+            // This is a simplified parser - you might want to enhance it
+            // Example: "Monday 12:00-15:00, Tuesday 20:00-00:00"
+            const blocks = availabilityText.split(',').map(s => s.trim());
+            
+            blocks.forEach(block => {
+                const match = block.match(/(\w+)\s+(\d{2}:\d{2})-(\d{2}:\d{2})/i);
+                if (match) {
+                    const [, day, start, end] = match;
+                    const dayName = day.charAt(0).toUpperCase() + day.slice(1).toLowerCase();
+                    
+                    if (!availability[dayName]) {
+                        availability[dayName] = [];
+                    }
+                    
+                    availability[dayName].push({
+                        start: start,
+                        end: end,
+                        start_hour: timeToHour(start),
+                        end_hour: timeToHour(end)
+                    });
+                }
+            });
+            
+            return availability;
+        }
+
+        // Convert time string to hour number
+        function timeToHour(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            let hourNum = hours + (minutes / 60);
+            if (hours === 0 && minutes === 0) hourNum = 24; // Handle 00:00 as 24:00
+            return hourNum;
+        }
+
+        // Delete worker (UPDATED FOR YOUR STRUCTURE)
+        window.deleteWorker = async function(workerIndex, workerName) {
             if (confirm(`⚠️ Are you sure you want to delete "${workerName}"?\n\nThis action cannot be undone.`)) {
                 try {
-                    console.log(`🗑️ Deleting worker ${workerId} from ${selectedWorkplace}`);
-                    await deleteDoc(doc(workplaceDb, selectedWorkplace, workerId));
-                    alert(`✅ Worker "${workerName}" has been deleted successfully.`);
-                    loadWorkers(selectedWorkplace);
+                    console.log(`🗑️ Deleting worker at index ${workerIndex} from ${selectedWorkplace}`);
+                    
+                    // First, get the current workers array
+                    const settingsRef = doc(workplaceDb, "settings", "workplaces");
+                    const settingsDoc = await getDoc(settingsRef);
+                    
+                    if (settingsDoc.exists()) {
+                        const data = settingsDoc.data();
+                        const workplaceData = data[selectedWorkplace];
+                        
+                        if (workplaceData && workplaceData.workers) {
+                            const workers = [...workplaceData.workers]; // Create a copy
+                            workers.splice(workerIndex, 1); // Remove worker at index
+                            
+                            // Update the entire workers array
+                            const updatePath = `${selectedWorkplace}.workers`;
+                            await updateDoc(settingsRef, {
+                                [updatePath]: workers
+                            });
+                            
+                            alert(`✅ Worker "${workerName}" has been deleted successfully.`);
+                            loadWorkers(selectedWorkplace);
+                        }
+                    }
                 } catch (error) {
                     console.error('❌ Error deleting worker:', error);
                     alert('❌ Error deleting worker: ' + error.message);
