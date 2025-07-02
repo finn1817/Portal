@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .login-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .login-container h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+        
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        .error {
+            color: red;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Login</h1>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit">Login</button>
+            <div id="error" class="error hidden"></div>
+        </form>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, query, where, getDocs, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Your Firebase config (replace with your actual config)
+        const firebaseConfig = {
+          apiKey: "AIzaSyAt_HJiP_uuWC7-AqMKlfLwjQFsESjB364",
+          authDomain: "my-admin-dashboard-b9c89.firebaseapp.com",
+          projectId: "my-admin-dashboard-b9c89",
+          storageBucket: "my-admin-dashboard-b9c89.firebasestorage.app",
+          messagingSenderId: "1001105953619",
+          appId: "1:1001105953619:web:1e2cf52a9ff37aeb5207a6",
+          measurementId: "G-DGTX5YCKYF"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Add initial non-admin user (run this once)
+        async function addInitialUser() {
+            try {
+                const docRef = await addDoc(collection(db, "users"), {
+                    email: "user@example.com",
+                    password: "password123",
+                    isAdmin: 0
+                });
+                console.log("Initial user added with ID: ", docRef.id);
+            } catch (e) {
+                console.error("Error adding document: ", e);
+            }
+        }
+
+        // Uncomment this line to add the initial user (comment it out after first run)
+        // addInitialUser();
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('error');
+            
+            try {
+                const q = query(collection(db, "users"), 
+                    where("email", "==", email), 
+                    where("password", "==", password));
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    errorDiv.textContent = "Invalid credentials";
+                    errorDiv.classList.remove('hidden');
+                } else {
+                    querySnapshot.forEach((doc) => {
+                        const userData = doc.data();
+                        localStorage.setItem('user', JSON.stringify({
+                            email: userData.email,
+                            isAdmin: userData.isAdmin
+                        }));
+                        window.location.href = 'dashboard.html';
+                    });
+                }
+            } catch (error) {
+                errorDiv.textContent = "Login failed";
+                errorDiv.classList.remove('hidden');
+                console.error("Error:", error);
+            }
+        });
+    </script>
+</body>
+</html>
