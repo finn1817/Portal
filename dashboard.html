@@ -834,8 +834,8 @@
                         <div class="form-group">
                             <label>Work Study</label>
                             <select id="workerWorkStudy">
-                                <option value="false">No</option>
-                                <option value="true">Yes</option>
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
                             </select>
                         </div>
                         <div class="form-group" style="grid-column: 1 / -1;">
@@ -1039,7 +1039,7 @@
             }
         }
 
-        // FIXED: Load workers for selected workplace matching your actual Firebase structure
+        // CORRECTED: Load workers matching your EXACT Firebase field names
         async function loadWorkers(workplace) {
             try {
                 document.getElementById('workersLoading').style.display = 'block';
@@ -1054,20 +1054,21 @@
                 workers = []; // Reset global workers array
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    console.log('📄 Worker document:', data);
+                    console.log('📄 Full worker document:', data);
                     
-                    // FIXED: Handle all possible field name variations
-                    const firstName = data.first_name || data.firstName || data.First_Name || 'Unknown';
-                    const lastName = data.last_name || data.lastName || data.Last_Name || 'Worker';
-                    const email = data.email || data.Email || 'no-email@example.com';
-                    const workStudy = data.work_study || data.workStudy || data.Work_Study || false;
+                    // CORRECTED: Use EXACT field names from your Firebase
+                    const firstName = data['First_Name'] || data.First_Name || data.first_name || data.firstName || 'Unknown';
+                    const lastName = data['Last_Name'] || data.Last_Name || data.last_name || data.lastName || 'Worker';
+                    const email = data['Email'] || data.email || 'no-email@example.com';
+                    const workStudy = data['Work_Study'] || data.Work_Study || data.work_study || data.workStudy || 'No';
+                    const availability = data['Days_&_Times_Available'] || 
+                                       data['Days_Times_Available'] || 
+                                       data.Days_Times_Available ||
+                                       data.availability_text || 
+                                       data.days_times_available || 
+                                       'Not set';
                     
-                    // Handle availability text field variations
-                    const availabilityText = data.availability_text || 
-                                           data.availabilityText || 
-                                           data.Days_Times_Available || 
-                                           data.days_times_available || 
-                                           'Not set';
+                    console.log('✅ Extracted fields:', { firstName, lastName, email, workStudy, availability });
                     
                     workers.push({
                         id: doc.id,
@@ -1075,7 +1076,7 @@
                         last_name: lastName,
                         email: email,
                         work_study: workStudy,
-                        availability_text: availabilityText,
+                        availability_text: availability,
                         availability: data.availability || {},
                         ...data // Include all original data
                     });
@@ -1089,7 +1090,7 @@
             }
         }
 
-        // FIXED: Display workers in table with proper field handling
+        // CORRECTED: Display workers with proper field handling
         function displayWorkers(workersData) {
             const tbody = document.getElementById('workersTableBody');
             tbody.innerHTML = '';
@@ -1106,12 +1107,14 @@
                     const workStudy = worker.work_study;
                     const availability = worker.availability_text;
                     
+                    console.log('🎯 Displaying worker:', { name, email, workStudy, availability });
+                    
                     row.innerHTML = `
                         <td>${name}</td>
                         <td>${email}</td>
                         <td>
-                            <span class="status-badge ${workStudy ? 'status-admin' : 'status-user'}">
-                                ${workStudy ? 'Yes' : 'No'}
+                            <span class="status-badge ${(workStudy === 'Yes' || workStudy === true) ? 'status-admin' : 'status-user'}">
+                                ${workStudy === 'Yes' || workStudy === true ? 'Yes' : 'No'}
                             </span>
                         </td>
                         <td style="max-width: 200px; word-wrap: break-word;">${availability}</td>
@@ -1129,7 +1132,7 @@
             document.getElementById('workersContainer').style.display = 'block';
         }
 
-        // Add new worker - CORRECTED STRUCTURE
+        // CORRECTED: Add new worker with your field names
         window.addWorker = async function() {
             if (!selectedWorkplace) {
                 alert('Please select a workplace first.');
@@ -1139,7 +1142,7 @@
             const firstName = document.getElementById('workerFirstName').value.trim();
             const lastName = document.getElementById('workerLastName').value.trim();
             const email = document.getElementById('workerEmail').value.trim();
-            const workStudy = document.getElementById('workerWorkStudy').value === 'true';
+            const workStudy = document.getElementById('workerWorkStudy').value;
             const availability = document.getElementById('workerAvailability').value.trim();
 
             if (!firstName || !lastName || !email) {
@@ -1150,15 +1153,22 @@
             try {
                 console.log(`➕ Adding worker to workplaces/${selectedWorkplace}/workers collection`);
                 
-                // Create the new worker object
+                // Create the new worker object using YOUR field names
                 const newWorker = {
+                    'First_Name': firstName,
+                    'Last_Name': lastName,
+                    'Email': email,
+                    'Work_Study': workStudy,
+                    'Days_&_Times_Available': availability,
+                    // Also include alternative field names for compatibility
                     first_name: firstName,
                     last_name: lastName,
                     email: email,
                     work_study: workStudy,
                     availability_text: availability,
                     availability: parseAvailabilityText(availability),
-                    created_at: new Date().toISOString()
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
                 };
 
                 // Add to workers subcollection
@@ -1170,7 +1180,7 @@
                 document.getElementById('workerFirstName').value = '';
                 document.getElementById('workerLastName').value = '';
                 document.getElementById('workerEmail').value = '';
-                document.getElementById('workerWorkStudy').value = 'false';
+                document.getElementById('workerWorkStudy').value = 'No';
                 document.getElementById('workerAvailability').value = '';
                 
                 // Reload workers
@@ -1391,7 +1401,7 @@
             }
         };
 
-        // Load workers for scheduling
+        // Load workers for scheduling with corrected field names
         async function loadWorkersForScheduling(workplace) {
             const workersQuery = query(collection(workplaceDb, 'workplaces', workplace, 'workers'));
             const querySnapshot = await getDocs(workersQuery);
@@ -1400,11 +1410,11 @@
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
                 
-                // Handle field name variations
-                const firstName = data.first_name || data.firstName || data.First_Name || 'Unknown';
-                const lastName = data.last_name || data.lastName || data.Last_Name || 'Worker';
-                const email = data.email || data.Email || 'no-email@example.com';
-                const workStudy = data.work_study || data.workStudy || data.Work_Study || false;
+                // Handle field name variations using your exact field names
+                const firstName = data['First_Name'] || data.First_Name || data.first_name || data.firstName || 'Unknown';
+                const lastName = data['Last_Name'] || data.Last_Name || data.last_name || data.lastName || 'Worker';
+                const email = data['Email'] || data.email || 'no-email@example.com';
+                const workStudy = data['Work_Study'] || data.Work_Study || data.work_study || data.workStudy || 'No';
                 
                 workersData.push({
                     id: doc.id,
