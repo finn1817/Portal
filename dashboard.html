@@ -1039,7 +1039,7 @@
             }
         }
 
-        // CORRECTED: Load workers matching your EXACT Firebase field names
+        // CORRECTED: Load workers using EXACT field names with spaces
         async function loadWorkers(workplace) {
             try {
                 document.getElementById('workersLoading').style.display = 'block';
@@ -1056,17 +1056,12 @@
                     const data = doc.data();
                     console.log('📄 Full worker document:', data);
                     
-                    // CORRECTED: Use EXACT field names from your Firebase
-                    const firstName = data['First_Name'] || data.First_Name || data.first_name || data.firstName || 'Unknown';
-                    const lastName = data['Last_Name'] || data.Last_Name || data.last_name || data.lastName || 'Worker';
-                    const email = data['Email'] || data.email || 'no-email@example.com';
-                    const workStudy = data['Work_Study'] || data.Work_Study || data.work_study || data.workStudy || 'No';
-                    const availability = data['Days_&_Times_Available'] || 
-                                       data['Days_Times_Available'] || 
-                                       data.Days_Times_Available ||
-                                       data.availability_text || 
-                                       data.days_times_available || 
-                                       'Not set';
+                    // CORRECTED: Use EXACT field names with spaces from your Firebase
+                    const firstName = data['First Name'] || 'Unknown';
+                    const lastName = data['Last Name'] || 'Worker';
+                    const email = data['Email'] || 'no-email@example.com';
+                    const workStudy = data['Work Study'] || 'No';
+                    const availability = data['Days & Times Available'] || 'Not set';
                     
                     console.log('✅ Extracted fields:', { firstName, lastName, email, workStudy, availability });
                     
@@ -1090,7 +1085,7 @@
             }
         }
 
-        // CORRECTED: Display workers with proper field handling
+        // Display workers with proper field handling
         function displayWorkers(workersData) {
             const tbody = document.getElementById('workersTableBody');
             tbody.innerHTML = '';
@@ -1132,7 +1127,7 @@
             document.getElementById('workersContainer').style.display = 'block';
         }
 
-        // CORRECTED: Add new worker with your field names
+        // CORRECTED: Add new worker with field names containing spaces
         window.addWorker = async function() {
             if (!selectedWorkplace) {
                 alert('Please select a workplace first.');
@@ -1153,20 +1148,13 @@
             try {
                 console.log(`➕ Adding worker to workplaces/${selectedWorkplace}/workers collection`);
                 
-                // Create the new worker object using YOUR field names
+                // Create the new worker object using YOUR EXACT field names with spaces
                 const newWorker = {
-                    'First_Name': firstName,
-                    'Last_Name': lastName,
+                    'First Name': firstName,
+                    'Last Name': lastName,
                     'Email': email,
-                    'Work_Study': workStudy,
-                    'Days_&_Times_Available': availability,
-                    // Also include alternative field names for compatibility
-                    first_name: firstName,
-                    last_name: lastName,
-                    email: email,
-                    work_study: workStudy,
-                    availability_text: availability,
-                    availability: parseAvailabilityText(availability),
+                    'Work Study': workStudy,
+                    'Days & Times Available': availability,
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()
                 };
@@ -1228,7 +1216,7 @@
             return hourNum;
         }
 
-        // Delete worker - CORRECTED STRUCTURE
+        // Delete worker
         window.deleteWorker = async function(workerId, workerName) {
             if (confirm(`⚠️ Are you sure you want to delete "${workerName}"?\n\nThis action cannot be undone.`)) {
                 try {
@@ -1410,11 +1398,11 @@
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
                 
-                // Handle field name variations using your exact field names
-                const firstName = data['First_Name'] || data.First_Name || data.first_name || data.firstName || 'Unknown';
-                const lastName = data['Last_Name'] || data.Last_Name || data.last_name || data.lastName || 'Worker';
-                const email = data['Email'] || data.email || 'no-email@example.com';
-                const workStudy = data['Work_Study'] || data.Work_Study || data.work_study || data.workStudy || 'No';
+                // Handle field name variations using your exact field names with spaces
+                const firstName = data['First Name'] || 'Unknown';
+                const lastName = data['Last Name'] || 'Worker';
+                const email = data['Email'] || 'no-email@example.com';
+                const workStudy = data['Work Study'] || 'No';
                 
                 workersData.push({
                     id: doc.id,
