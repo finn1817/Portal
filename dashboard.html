@@ -4,8 +4,283 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workplace Scheduler - Dashboard</title>
-    <link rel="stylesheet" href="/Portal/css/styles.css">
-    <link rel="stylesheet" href="/Portal/css/dashboard.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        body.admin .admin-only {
+            display: block;
+        }
+
+        .admin-only {
+            display: none;
+        }
+
+        .header {
+            padding: 1rem 2rem;
+            background: white;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .container {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .admin-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .feature-btn {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .user-role {
+            background: #6c757d;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .feature-card {
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 2% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 95%;
+            max-width: 1000px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .workplace-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .workplace-card {
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #e9ecef;
+            background: #f8f9fa;
+        }
+
+        .workplace-card:hover {
+            transform: translateY(-3px);
+            border-color: #007bff;
+        }
+
+        .workplace-card.selected {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .workplace-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .workplace-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .workplace-desc {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            background: rgba(0,123,255,0.1);
+        }
+
+        .tab.active {
+            border-bottom-color: #007bff;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .worker-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .add-worker-btn {
+            background: #28a745;
+            color: white;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+
+        @media (max-width: 768px) {
+            .workplace-selector {
+                grid-template-columns: 1fr;
+            }
+            .tabs {
+                flex-direction: column;
+                border-bottom: none;
+            }
+            .tab {
+                border-bottom: 1px solid #dee2e6;
+            }
+        }
+    </style>
 </head>
 <body class="light">
     <header class="header">
@@ -13,7 +288,6 @@
         <div>
             <span id="userEmail"></span>
             <span id="userRole" class="user-role"></span>
-            <button id="themeToggle" class="theme-btn admin-only">🌙 Dark Mode</button>
             <button id="myProfile" class="feature-btn">👤 Profile</button>
             <button id="manageUsers" class="admin-btn admin-only">👥 Manage Users</button>
             <button id="logout" class="logout-btn">Logout</button>
@@ -33,31 +307,31 @@
         <div class="card">
             <h2>🚀 Quick Actions</h2>
             <div class="features-grid">
-                <div class="feature-card" data-modal="profileModal">
+                <div class="feature-card" onclick="alert('Profile feature coming soon!')">
                     <div class="feature-icon">👤</div>
                     <div class="feature-title">My Profile</div>
                     <div class="feature-desc">View and manage your account information</div>
                 </div>
                 
-                <div class="feature-card" data-modal="activityModal">
+                <div class="feature-card" onclick="alert('Activity log feature coming soon!')">
                     <div class="feature-icon">📊</div>
                     <div class="feature-title">Activity Log</div>
                     <div class="feature-desc">Track your recent activities and sessions</div>
                 </div>
                 
-                <div class="feature-card" data-modal="settingsModal">
+                <div class="feature-card" onclick="alert('Settings feature coming soon!')">
                     <div class="feature-icon">⚙️</div>
                     <div class="feature-title">Settings</div>
                     <div class="feature-desc">Customize your dashboard preferences</div>
                 </div>
                 
-                <div class="feature-card admin-only" data-modal="analyticsModal">
+                <div class="feature-card admin-only" onclick="alert('Analytics feature coming soon!')">
                     <div class="feature-icon">📈</div>
                     <div class="feature-title">Analytics</div>
                     <div class="feature-desc">View platform statistics and insights</div>
                 </div>
 
-                <div class="feature-card admin-only" data-modal="workplaceManagementModal">
+                <div class="feature-card admin-only" onclick="openModal('workplaceManagementModal')">
                     <div class="feature-icon">🏗️</div>
                     <div class="feature-title">Workplace Management</div>
                     <div class="feature-desc">Manage all workplaces, workers, and schedules</div>
@@ -69,168 +343,32 @@
         <div class="card admin-only">
             <h2>🔧 Admin Panel</h2>
             <p>This section is only visible to administrators.</p>
-            <p>As an admin, you can:</p>
-            <ul style="margin-left: 2rem; margin-top: 1rem;">
-                <li>Toggle between light and dark themes</li>
-                <li>Manage user accounts and permissions</li>
-                <li>View all registered users</li>
-                <li>Promote/demote admin status</li>
-                <li>Delete user accounts</li>
-                <li>View platform analytics</li>
-                <li><strong>🏢 Manage all 3 workplaces</strong></li>
-                <li><strong>👥 Manage workplace workers</strong></li>
-                <li><strong>📅 Generate and view schedules</strong></li>
-                <li><strong>⏰ Manage hours of operation</strong></li>
-                <li><strong>🚨 Check last-minute availability</strong></li>
-                <li><strong>✏️ Override shift assignments</strong></li>
-            </ul>
-        </div>
-
-        <!-- User Management Section -->
-        <div id="userManagement" class="card admin-only" style="display: none;">
-            <button id="closeUserManagement" class="close-btn">✕ Close</button>
-            <h2>👥 User Management</h2>
-            
-            <div class="stats">
-                <div class="stat-card">
-                    <div class="stat-number" id="totalUsers">-</div>
-                    <div class="stat-label">Total Users</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="totalAdmins">-</div>
-                    <div class="stat-label">Administrators</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="totalRegularUsers">-</div>
-                    <div class="stat-label">Regular Users</div>
-                </div>
-            </div>
-
-            <div id="usersLoading" class="loading">Loading users...</div>
-            <div id="usersContainer" style="display: none;">
-                <table class="user-table">
-                    <thead>
-                        <tr>
-                            <th>Email</th>
-                            <th>Status</th>
-                            <th>Created</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usersTableBody">
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modals -->
-    <div id="profileModal" class="modal">
-        <div class="modal-content">
-            <button class="modal-close" data-close-modal="profileModal">×</button>
-            <h2>👤 My Profile</h2>
-            <div class="profile-info">
-                <div class="info-item">
-                    <div class="info-label">Email Address</div>
-                    <div id="profileEmail">-</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Account Type</div>
-                    <div id="profileType">-</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Member Since</div>
-                    <div id="profileCreated">-</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">User ID</div>
-                    <div id="profileId">-</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="activityModal" class="modal">
-        <div class="modal-content">
-            <button class="modal-close" data-close-modal="activityModal">×</button>
-            <h2>📊 Recent Activity</h2>
-            <div id="activityLog">
-                <div class="activity-item">
-                    <div>🔐 Logged in successfully</div>
-                    <div class="activity-time" id="loginTime">-</div>
-                </div>
-                <div class="activity-item">
-                    <div>👤 Profile viewed</div>
-                    <div class="activity-time">Just now</div>
-                </div>
-                <div class="activity-item admin-only">
-                    <div>👥 User management accessed</div>
-                    <div class="activity-time">Earlier today</div>
-                </div>
-                <div class="activity-item admin-only">
-                    <div>🏢 Workplace management accessed</div>
-                    <div class="activity-time">Recently</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="settingsModal" class="modal">
-        <div class="modal-content">
-            <button class="modal-close" data-close-modal="settingsModal">×</button>
-            <h2>⚙️ Settings</h2>
-            <p><strong>Theme Preference:</strong></p>
-            <p>Light/Dark theme toggle is available in the header.</p>
-            <p style="margin-top: 1rem;"><strong>Notifications:</strong></p>
-            <p>Dashboard notifications are currently enabled.</p>
-            <p style="margin-top: 1rem;"><strong>Language:</strong></p>
-            <p>English (US) - Default</p>
-        </div>
-    </div>
-
-    <div id="analyticsModal" class="modal admin-only">
-        <div class="modal-content">
-            <button class="modal-close" data-close-modal="analyticsModal">×</button>
-            <h2>📈 Platform Analytics</h2>
-            <div class="stats">
-                <div class="stat-card">
-                    <div class="stat-number" id="analyticsUsers">-</div>
-                    <div class="stat-label">Total Users</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="analyticsLogins">-</div>
-                    <div class="stat-label">Today's Logins</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="analyticsNewUsers">-</div>
-                    <div class="stat-label">New This Week</div>
-                </div>
-            </div>
+            <p>As an admin, you can manage all 3 workplaces and their workers.</p>
         </div>
     </div>
 
     <!-- Workplace Management Modal -->
     <div id="workplaceManagementModal" class="modal admin-only">
         <div class="modal-content">
-            <button class="modal-close" data-close-modal="workplaceManagementModal">×</button>
+            <button class="modal-close" onclick="closeModal('workplaceManagementModal')">×</button>
             <h2>🏗️ Workplace Management</h2>
             
             <!-- Workplace Selector -->
             <h3>Select Workplace</h3>
             <div class="workplace-selector">
-                <div class="workplace-card" data-workplace="esports_lounge">
+                <div class="workplace-card" data-workplace="esports_lounge" onclick="selectWorkplace('esports_lounge', this)">
                     <div class="workplace-icon">🎮</div>
                     <div class="workplace-name">eSports Lounge</div>
                     <div class="workplace-desc">Gaming tournaments and casual play</div>
                 </div>
                 
-                <div class="workplace-card" data-workplace="esports_arena">
+                <div class="workplace-card" data-workplace="esports_arena" onclick="selectWorkplace('esports_arena', this)">
                     <div class="workplace-icon">🏟️</div>
                     <div class="workplace-name">eSports Arena</div>
                     <div class="workplace-desc">Competitive gaming events</div>
                 </div>
                 
-                <div class="workplace-card" data-workplace="it_service_center">
+                <div class="workplace-card" data-workplace="it_service_center" onclick="selectWorkplace('it_service_center', this)">
                     <div class="workplace-icon">💻</div>
                     <div class="workplace-name">IT Service Center</div>
                     <div class="workplace-desc">Technical support and services</div>
@@ -244,10 +382,10 @@
                 
                 <!-- Tabs -->
                 <div class="tabs">
-                    <div class="tab active" data-tab="workers">👥 Workers</div>
-                    <div class="tab" data-tab="schedule">📅 Schedule</div>
-                    <div class="tab" data-tab="hours">⏰ Hours</div>
-                    <div class="tab" data-tab="lastMinute">🚨 Last Minute</div>
+                    <div class="tab active" data-tab="workers" onclick="switchTab('workers')">👥 Workers</div>
+                    <div class="tab" data-tab="schedule" onclick="switchTab('schedule')">📅 Schedule</div>
+                    <div class="tab" data-tab="hours" onclick="switchTab('hours')">⏰ Hours</div>
+                    <div class="tab" data-tab="lastMinute" onclick="switchTab('lastMinute')">🚨 Last Minute</div>
                 </div>
 
                 <!-- Workers Tab -->
@@ -280,117 +418,30 @@
                             <textarea id="workerAvailability" rows="3" placeholder="Monday 12:00-15:00, Tuesday 20:00-00:00"></textarea>
                         </div>
                         <div class="form-group">
-                            <button id="addWorkerBtn" class="add-worker-btn">➕ Add Worker</button>
+                            <button onclick="addWorker()" class="add-worker-btn">➕ Add Worker</button>
                         </div>
                     </div>
 
                     <!-- Workers List -->
                     <div id="workersLoading" class="loading">Loading workers...</div>
-                    <div id="workersContainer" style="display: none;">
-                        <table class="user-table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Work Study</th>
-                                    <th>Availability</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="workersTableBody">
-                            </tbody>
-                        </table>
+                    <div id="workersList">
+                        <!-- Workers will be displayed here -->
                     </div>
                 </div>
 
                 <!-- Schedule Tab -->
                 <div id="scheduleTab" class="tab-content">
                     <h4>Schedule Management</h4>
-                    
-                    <!-- Schedule Options -->
-                    <div class="schedule-options">
-                        <div class="schedule-option-card" id="generateScheduleOption">
-                            <div class="schedule-option-icon">🔄</div>
-                            <div class="schedule-option-title">Generate New Schedule</div>
-                            <div>Create a new schedule with specific settings</div>
-                        </div>
-                        
-                        <div class="schedule-option-card" id="viewCurrentScheduleOption">
-                            <div class="schedule-option-icon">👁️</div>
-                            <div class="schedule-option-title">View Current Schedule</div>
-                            <div>See the published active schedule</div>
-                        </div>
-                        
-                        <div class="schedule-option-card" id="shiftOverrideOption">
-                            <div class="schedule-option-icon">✏️</div>
-                            <div class="schedule-option-title">Shift Override</div>
-                            <div>Manually modify worker assignments</div>
-                        </div>
-                        
-                        <div class="schedule-option-card" id="scheduleHistoryOption">
-                            <div class="schedule-option-icon">🗂️</div>
-                            <div class="schedule-option-title">Schedule History</div>
-                            <div>View and manage past schedules</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Generate Schedule Form (initially hidden) -->
-                    <div id="generateScheduleForm" class="schedule-generation-form" style="display: none;">
-                        <h5>Generate New Schedule</h5>
-                        <p>Configure settings for schedule generation:</p>
-                        
-                        <div class="form-group" style="margin-top: 1rem;">
-                            <label>Maximum Hours Per Worker:</label>
-                            <input type="number" id="maxHoursPerWorker" min="1" max="40" value="20">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Maximum Workers Per Shift:</label>
-                            <input type="number" id="maxWorkersPerShift" min="1" max="10" value="2">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Minimum Hours Per Worker:</label>
-                            <input type="number" id="minHoursPerWorker" min="0" max="40" value="3">
-                        </div>
-                        
-                        <p style="margin-top: 1rem; font-style: italic;">Note: Work study students will always be assigned exactly 5 hours per week.</p>
-                        
-                        <div class="schedule-controls">
-                            <button id="generateScheduleBtn" class="generate-btn">🔄 Generate Schedule</button>
-                            <button id="cancelGenerateBtn" class="cancel-btn">Cancel</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Schedule History Section (initially hidden) -->
-                    <div id="scheduleHistorySection" style="display: none;">
-                        <h5>Schedule History</h5>
-                        <p>View and manage past schedules. Click on a schedule to view it.</p>
-                        
-                        <div id="scheduleHistoryList" class="schedule-list">
-                            <div class="loading">Loading schedule history...</div>
-                        </div>
-                        
-                        <button id="backToScheduleBtn" class="back-btn">Back to Schedule Options</button>
-                    </div>
-                    
-                    <!-- Shift Override Section (initially hidden) -->
-                    <div id="shiftOverrideSection" class="shift-override-form" style="display: none;">
-                        <h5>Shift Override</h5>
-                        <p>Manually adjust worker assignments for specific shifts.</p>
-                        
-                        <div id="shiftOverrideContent">
-                            <p>Loading current schedule...</p>
-                        </div>
-                        
-                        <div class="schedule-controls">
-                            <button id="saveOverridesBtn" class="save-btn">💾 Save Changes</button>
-                            <button id="cancelOverrideBtn" class="cancel-btn">Cancel</button>
-                        </div>
-                    </div>
-                    
-                    <div id="scheduleContent">
-                        <p>Select an option above to get started.</p>
+                    <p>Schedule management features will be available here.</p>
+                    <div style="padding: 2rem; background: #f8f9fa; border-radius: 8px; margin-top: 1rem;">
+                        <h5>🔄 Generate Schedule</h5>
+                        <p>Create automated schedules based on worker availability.</p>
+                        <br>
+                        <h5>👁️ View Current Schedule</h5>
+                        <p>See the currently active schedule.</p>
+                        <br>
+                        <h5>✏️ Shift Override</h5>
+                        <p>Manually adjust worker assignments.</p>
                     </div>
                 </div>
 
@@ -398,18 +449,8 @@
                 <div id="hoursTab" class="tab-content">
                     <h4>Hours of Operation</h4>
                     <p>Manage operating hours for this workplace.</p>
-                    
-                    <div class="hours-form">
-                        <h5>Set Operating Hours</h5>
-                        <div id="hoursSchedule">
-                            <!-- Dynamic hours content will go here -->
-                        </div>
-                        <button id="saveHoursBtn" class="save-btn">💾 Save Hours</button>
-                    </div>
-                    
-                    <div id="hoursLoading" class="loading">Loading hours...</div>
-                    <div id="hoursContent">
-                        <!-- Current hours display -->
+                    <div style="padding: 2rem; background: #f8f9fa; border-radius: 8px; margin-top: 1rem;">
+                        <p>Set the hours when this workplace is open and needs staff coverage.</p>
                     </div>
                 </div>
                 
@@ -417,61 +458,272 @@
                 <div id="lastMinuteTab" class="tab-content">
                     <h4>Last Minute Availability</h4>
                     <p>Check which workers are available for urgent shift coverage.</p>
-                    
-                    <div class="last-minute-form">
-                        <div class="last-minute-title">🚨 Find Available Workers</div>
-                        
-                        <div class="last-minute-inputs">
-                            <div class="form-group">
-                                <label>Day:</label>
-                                <select id="lastMinuteDay">
-                                    <option value="Monday">Monday</option>
-                                    <option value="Tuesday">Tuesday</option>
-                                    <option value="Wednesday">Wednesday</option>
-                                    <option value="Thursday">Thursday</option>
-                                    <option value="Friday">Friday</option>
-                                    <option value="Saturday">Saturday</option>
-                                    <option value="Sunday">Sunday</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Start Time:</label>
-                                <input type="time" id="lastMinuteStart" value="09:00">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>End Time:</label>
-                                <input type="time" id="lastMinuteEnd" value="17:00">
-                            </div>
-                        </div>
-                        
-                        <button id="checkAvailabilityBtn" class="check-btn">🔍 Check Availability</button>
-                    </div>
-                    
-                    <div id="lastMinuteResults" style="display: none;">
-                        <h5>Available Workers</h5>
-                        <div id="availableWorkersCount" style="margin-bottom: 1rem;"></div>
-                        
-                        <div id="availableWorkersList" class="available-workers-list">
-                            <!-- Available workers will be listed here -->
-                        </div>
+                    <div style="padding: 2rem; background: #f8f9fa; border-radius: 8px; margin-top: 1rem;">
+                        <p>🚨 Find workers who can cover emergency shifts or last-minute callouts.</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <script type="module">
+        console.log('🔥 Starting Dashboard initialization...');
+        
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+        import { getFirestore, collection, getDocs, addDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
+        // Firebase configs
+        const userFirebaseConfig = {
+            apiKey: "AIzaSyAt_HJiP_uuWC7-AqMKlfLwjQFsESjB364",
+            authDomain: "my-admin-dashboard-b9c89.firebaseapp.com",
+            projectId: "my-admin-dashboard-b9c89",
+            storageBucket: "my-admin-dashboard-b9c89.firebasestorage.app",
+            messagingSenderId: "1001105953619",
+            appId: "1:1001105953619:web:1e2cf52a9ff37aeb5207a6",
+            measurementId: "G-DGTX5YCKYF"
+        };
 
-    <!-- Firebase SDK -->
-    <script type="module" src="js/firebase-config.js"></script>
-    <script type="module" src="js/ui.js"></script>
-    <script type="module" src="js/users.js"></script>
-    <script type="module" src="js/workplaces.js"></script>
-    <script type="module" src="js/workers.js"></script>
-    <script type="module" src="js/hours.js"></script>
-    <script type="module" src="js/schedule.js"></script>
-    <script type="module" src="js/availability.js"></script>
+        const workplaceFirebaseConfig = {
+            apiKey: "AIzaSyBkkq4nPnmyfSOKtVLsO95rpAUsMDA1o0A",
+            authDomain: "workplace-scheduler-ace38.firebaseapp.com",
+            projectId: "workplace-scheduler-ace38",
+            storageBucket: "workplace-scheduler-ace38.firebasestorage.app",
+            messagingSenderId: "153631302747",
+            appId: "1:153631302747:web:2c731351893dca19510b7e",
+            measurementId: "G-THHV6M3Z88"
+        };
+
+        // Initialize Firebase
+        const userApp = initializeApp(userFirebaseConfig, "users");
+        const workplaceApp = initializeApp(workplaceFirebaseConfig, "workplace");
+        const userDb = getFirestore(userApp);
+        const workplaceDb = getFirestore(workplaceApp);
+
+        console.log('✅ Firebase initialized successfully');
+
+        // Global variables
+        let selectedWorkplace = null;
+        let workers = [];
+
+        // Check if user is logged in
+        const userData = JSON.parse(localStorage.getItem('user'));
+        if (!userData) {
+            window.location.href = 'index.html';
+        }
+
+        // Set up user info
+        if (userData) {
+            const emailName = userData.email.split('@')[0];
+            document.getElementById('userEmail').textContent = userData.email;
+            document.getElementById('welcomeName').textContent = emailName;
+            const isAdmin = userData.isAdmin === 1;
+            
+            document.getElementById('userRole').textContent = isAdmin ? 'Admin' : 'User';
+            document.getElementById('accountType').textContent = isAdmin ? 'Administrator' : 'Standard User';
+            document.getElementById('lastLogin').textContent = new Date().toLocaleString();
+            
+            if (isAdmin) {
+                document.body.classList.add('admin');
+            }
+        }
+
+        // Global functions
+        window.openModal = function(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        };
+
+        window.closeModal = function(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        };
+
+        window.selectWorkplace = function(workplace, element) {
+            console.log('🏢 Selected workplace:', workplace);
+            selectedWorkplace = workplace;
+            
+            // Update visual selection
+            document.querySelectorAll('.workplace-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            
+            // Show workplace content
+            document.getElementById('workplaceContent').style.display = 'block';
+            
+            // Update workplace name
+            const names = {
+                'esports_lounge': '🎮 eSports Lounge',
+                'esports_arena': '🏟️ eSports Arena',
+                'it_service_center': '💻 IT Service Center'
+            };
+            document.getElementById('selectedWorkplaceName').textContent = names[workplace];
+            
+            // Load workers for this workplace
+            loadWorkers();
+        };
+
+        window.switchTab = function(tabName) {
+            console.log('📋 Switching to tab:', tabName);
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        };
+
+        // Load workers function
+        async function loadWorkers() {
+            if (!selectedWorkplace) return;
+            
+            try {
+                document.getElementById('workersLoading').style.display = 'block';
+                document.getElementById('workersList').innerHTML = '';
+                
+                console.log(`🔍 Loading workers from workplaces/${selectedWorkplace}/workers collection`);
+                
+                const workersQuery = collection(workplaceDb, 'workplaces', selectedWorkplace, 'workers');
+                const querySnapshot = await getDocs(workersQuery);
+                
+                workers = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    workers.push({
+                        id: doc.id,
+                        ...data
+                    });
+                });
+
+                console.log(`✅ Found ${workers.length} workers in ${selectedWorkplace}`);
+                displayWorkers();
+                
+            } catch (error) {
+                console.error('❌ Error loading workers:', error);
+                document.getElementById('workersLoading').innerHTML = `<p style="color: red;">Error loading workers: ${error.message}</p>`;
+            }
+        }
+
+        // Display workers function
+        function displayWorkers() {
+            document.getElementById('workersLoading').style.display = 'none';
+            
+            if (workers.length === 0) {
+                document.getElementById('workersList').innerHTML = `
+                    <div style="padding: 2rem; text-align: center; background: #f8f9fa; border-radius: 8px;">
+                        <p>No workers found. Add some workers to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <h5>Current Workers (${workers.length})</h5>
+                <div style="margin-top: 1rem;">
+            `;
+
+            workers.forEach(worker => {
+                const firstName = worker['First Name'] || worker.first_name || 'Unknown';
+                const lastName = worker['Last Name'] || worker.last_name || 'Worker';
+                const email = worker['Email'] || worker.email || 'no-email@example.com';
+                const workStudy = worker['Work Study'] || worker.work_study || 'No';
+                const availability = worker['Days & Times Available'] || worker.availability_text || 'Not set';
+
+                html += `
+                    <div style="padding: 1rem; margin-bottom: 1rem; border: 1px solid #dee2e6; border-radius: 8px; background: white;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <h6 style="margin: 0; font-size: 1.1rem;">${firstName} ${lastName}</h6>
+                                <p style="margin: 0.25rem 0; color: #6c757d;">${email}</p>
+                                <p style="margin: 0.25rem 0;"><strong>Work Study:</strong> ${workStudy}</p>
+                                <p style="margin: 0.25rem 0;"><strong>Availability:</strong> ${availability}</p>
+                            </div>
+                            <button onclick="deleteWorker('${worker.id}', '${firstName} ${lastName}')" style="background: #dc3545; color: white; border: none; padding: 0.5rem; border-radius: 4px; cursor: pointer;">
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            document.getElementById('workersList').innerHTML = html;
+        }
+
+        // Add worker function
+        window.addWorker = async function() {
+            if (!selectedWorkplace) {
+                alert('Please select a workplace first.');
+                return;
+            }
+
+            const firstName = document.getElementById('workerFirstName').value.trim();
+            const lastName = document.getElementById('workerLastName').value.trim();
+            const email = document.getElementById('workerEmail').value.trim();
+            const workStudy = document.getElementById('workerWorkStudy').value;
+            const availability = document.getElementById('workerAvailability').value.trim();
+
+            if (!firstName || !lastName || !email) {
+                alert('Please fill in all required fields (First Name, Last Name, Email).');
+                return;
+            }
+
+            try {
+                console.log(`➕ Adding worker to workplaces/${selectedWorkplace}/workers collection`);
+                
+                const newWorker = {
+                    'First Name': firstName,
+                    'Last Name': lastName,
+                    'Email': email,
+                    'Work Study': workStudy,
+                    'Days & Times Available': availability,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                };
+
+                await addDoc(collection(workplaceDb, 'workplaces', selectedWorkplace, 'workers'), newWorker);
+
+                alert('✅ Worker added successfully!');
+                
+                // Clear form
+                document.getElementById('workerFirstName').value = '';
+                document.getElementById('workerLastName').value = '';
+                document.getElementById('workerEmail').value = '';
+                document.getElementById('workerWorkStudy').value = 'No';
+                document.getElementById('workerAvailability').value = '';
+                
+                // Reload workers
+                loadWorkers();
+                
+            } catch (error) {
+                console.error('❌ Error adding worker:', error);
+                alert('❌ Error adding worker: ' + error.message);
+            }
+        };
+
+        // Delete worker function
+        window.deleteWorker = function(workerId, workerName) {
+            if (confirm(`⚠️ Are you sure you want to delete "${workerName}"?\n\nThis action cannot be undone.`)) {
+                alert('Delete functionality will be implemented soon.');
+                // TODO: Implement delete functionality
+            }
+        };
+
+        // Logout functionality
+        document.getElementById('logout').addEventListener('click', function() {
+            localStorage.removeItem('user');
+            window.location.href = 'index.html';
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        });
+
+        console.log('🎉 Dashboard loaded successfully');
+    </script>
 </body>
 </html>
