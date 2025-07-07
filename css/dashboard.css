@@ -1,0 +1,946 @@
+/* Dashboard Styles */
+.header {
+    padding: 1rem 2rem;
+    border-bottom: 1px solid;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.light .header {
+    background: white;
+    border-color: #eee;
+}
+
+.dark .header {
+    background: #2d2d2d;
+    border-color: #444;
+}
+
+.container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.card {
+    padding: 2rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.light .card {
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.light .card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.dark .card {
+    background: #2d2d2d;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.dark .card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+.theme-btn {
+    background: #007bff;
+    color: white;
+}
+
+.logout-btn {
+    background: #dc3545;
+    color: white;
+}
+
+.admin-btn {
+    background: #28a745;
+    color: white;
+}
+
+.feature-btn {
+    background: #17a2b8;
+    color: white;
+}
+
+.admin-only {
+    display: none;
+}
+
+.admin .admin-only {
+    display: block;
+}
+
+.user-role {
+    background: #6c757d;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    margin-left: 0.5rem;
+}
+
+.admin-role {
+    background: #28a745;
+}
+
+/* User Management Styles */
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.user-table th,
+.user-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.dark .user-table th,
+.dark .user-table td {
+    border-bottom-color: #444;
+}
+
+.user-table th {
+    font-weight: 600;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-admin {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-user {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.dark .status-admin {
+    background: #28a745;
+    color: white;
+}
+
+.dark .status-user {
+    background: #6c757d;
+    color: white;
+}
+
+.action-btn {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    margin: 0 0.25rem;
+}
+
+.promote-btn {
+    background: #28a745;
+    color: white;
+}
+
+.demote-btn {
+    background: #ffc107;
+    color: #212529;
+}
+
+.delete-btn {
+    background: #dc3545;
+    color: white;
+}
+
+.close-btn {
+    background: #6c757d;
+    color: white;
+    float: right;
+    margin: 0 0 1rem 0;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: scale(1.05);
+}
+
+.light .stat-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+}
+
+.dark .stat-card {
+    background: #495057;
+    border: 1px solid #6c757d;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+/* Feature Grid */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.feature-card {
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.light .feature-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.dark .feature-card {
+    background: linear-gradient(135deg, #434343 0%, #000000 100%);
+    color: white;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px) scale(1.02);
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.feature-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.feature-desc {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    overflow-y: auto;
+}
+
+.modal-content {
+    background-color: white;
+    margin: 2% auto;
+    padding: 2rem;
+    border-radius: 8px;
+    width: 95%;
+    max-width: 1000px;
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.dark .modal-content {
+    background-color: #2d2d2d;
+    color: white;
+}
+
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+}
+
+/* Activity Log */
+.activity-item {
+    padding: 0.75rem;
+    border-left: 3px solid #007bff;
+    margin-bottom: 0.5rem;
+    border-radius: 0 4px 4px 0;
+}
+
+.light .activity-item {
+    background: #f8f9fa;
+}
+
+.dark .activity-item {
+    background: #495057;
+}
+
+.activity-time {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+/* Profile Section */
+.profile-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.info-item {
+    padding: 1rem;
+    border-radius: 4px;
+}
+
+.light .info-item {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+}
+
+.dark .info-item {
+    background: #495057;
+    border: 1px solid #6c757d;
+}
+
+.info-label {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+/* Workplace Management Styles */
+.workplace-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.workplace-card {
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.workplace-card:hover {
+    transform: translateY(-3px);
+    border-color: #007bff;
+}
+
+.workplace-card.selected {
+    border-color: #28a745;
+    background: rgba(40, 167, 69, 0.1);
+}
+
+.light .workplace-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+}
+
+.dark .workplace-card {
+    background: #495057;
+    border: 1px solid #6c757d;
+}
+
+.workplace-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.workplace-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.workplace-desc {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.tabs {
+    display: flex;
+    border-bottom: 2px solid #e9ecef;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.dark .tabs {
+    border-bottom-color: #6c757d;
+}
+
+.tab {
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.tab:hover {
+    background: rgba(0,123,255,0.1);
+}
+
+.tab.active {
+    border-bottom-color: #007bff;
+    color: #007bff;
+    font-weight: bold;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.worker-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+}
+
+.dark .worker-form {
+    border-color: #6c757d;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.form-group input, .form-group textarea, .form-group select {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.dark .form-group input, 
+.dark .form-group textarea, 
+.dark .form-group select {
+    background: #495057;
+    border-color: #6c757d;
+    color: white;
+}
+
+/* Hours Management */
+.hours-form {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+}
+
+.dark .hours-form {
+    border-color: #6c757d;
+}
+
+.day-schedule {
+    display: grid;
+    grid-template-columns: 120px 1fr 1fr 120px;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid #eee;
+    border-radius: 4px;
+}
+
+.dark .day-schedule {
+    border-color: #6c757d;
+}
+
+/* Schedule display */
+.schedule-day-header {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.dark .schedule-day-header {
+    border-bottom-color: #6c757d;
+}
+
+.schedule-shift {
+    display: flex;
+    margin-bottom: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    border-left: 4px solid #007bff;
+}
+
+.dark .schedule-shift {
+    background-color: #343a40;
+    border-left-color: #007bff;
+}
+
+.schedule-shift.unfilled {
+    border-left-color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.dark .schedule-shift.unfilled {
+    background-color: rgba(220, 53, 69, 0.2);
+}
+
+.schedule-time {
+    flex: 0 0 150px;
+    font-weight: bold;
+}
+
+.schedule-workers {
+    flex: 1;
+}
+
+.unfilled-text {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+/* Schedule options */
+.schedule-options {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.schedule-option-card {
+    flex: 1;
+    min-width: 200px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.schedule-option-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.dark .schedule-option-card {
+    background-color: #343a40;
+    border-color: #495057;
+}
+
+.schedule-option-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.schedule-option-title {
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+/* Last minute availability */
+.last-minute-form {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.dark .last-minute-form {
+    background-color: #343a40;
+    border-color: #495057;
+}
+
+.last-minute-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: #fd7e14;
+}
+
+.last-minute-inputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.available-workers-list {
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.dark .available-workers-list {
+    background-color: #495057;
+    border-color: #6c757d;
+}
+
+.available-worker-item {
+    padding: 0.75rem;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dark .available-worker-item {
+    border-bottom-color: #6c757d;
+}
+
+.available-worker-item:last-child {
+    border-bottom: none;
+}
+
+.contact-btn {
+    padding: 0.25rem 0.75rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.contact-btn:hover {
+    background-color: #0069d9;
+}
+
+/* Schedule generation form */
+.schedule-generation-form {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.dark .schedule-generation-form {
+    background-color: #343a40;
+    border-color: #495057;
+}
+
+.schedule-controls {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.schedule-warning {
+    background-color: rgba(255, 193, 7, 0.2);
+    border-left: 4px solid #ffc107;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.dark .schedule-warning {
+    background-color: rgba(255, 193, 7, 0.1);
+}
+
+.work-study-issue {
+    color: #dc3545;
+    font-weight: bold;
+    margin-top: 0.5rem;
+}
+
+/* Print and export options */
+.print-options {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.dark .print-options {
+    border-top-color: #495057;
+}
+
+/* Shift override styles */
+.shift-override-form {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+.dark .shift-override-form {
+    background-color: #343a40;
+    border-color: #495057;
+}
+
+.override-shift-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    align-items: center;
+}
+
+.override-worker-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.dark .override-worker-list {
+    border-color: #495057;
+}
+
+.override-worker-item {
+    padding: 0.5rem;
+    margin-bottom: 0.25rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.override-worker-item:hover {
+    background-color: #e9ecef;
+}
+
+.dark .override-worker-item:hover {
+    background-color: #495057;
+}
+
+.override-worker-item.selected {
+    background-color: #007bff;
+    color: white;
+}
+
+.dark .override-worker-item.selected {
+    background-color: #0069d9;
+}
+
+/* Publish schedule button */
+.publish-btn {
+    background: #28a745;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    display: inline-block;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.publish-btn:hover {
+    background: #218838;
+    transform: translateY(-2px);
+}
+
+.publish-banner {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    border-left: 4px solid #28a745;
+}
+
+.dark .publish-banner {
+    background-color: #1e4620;
+    color: #d4edda;
+    border-left-color: #28a745;
+}
+
+.history-btn {
+    background: #6c757d;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-right: 0.5rem;
+}
+
+.history-btn:hover {
+    background: #5a6268;
+}
+
+.schedule-list {
+    margin-top: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.schedule-list-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.schedule-list-item:last-child {
+    border-bottom: none;
+}
+
+.dark .schedule-list-item {
+    border-bottom-color: #495057;
+}
+
+.schedule-list-item:hover {
+    background-color: #f8f9fa;
+}
+
+.dark .schedule-list-item:hover {
+    background-color: #343a40;
+}
+
+.schedule-list-item.current {
+    background-color: #d4edda;
+    border-left: 4px solid #28a745;
+}
+
+.dark .schedule-list-item.current {
+    background-color: #1e4620;
+    border-left-color: #28a745;
+}
+
+.schedule-date {
+    font-weight: bold;
+}
+
+.schedule-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Button styles */
+.add-worker-btn, .save-btn {
+    background: #28a745;
+    color: white;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.generate-btn {
+    background: #007bff;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.cancel-btn, .back-btn {
+    background: #6c757d;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.check-btn {
+    background: #fd7e14;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .container {
+        padding: 1rem;
+    }
+    
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .workplace-selector {
+        grid-template-columns: 1fr;
+    }
+
+    .day-schedule {
+        grid-template-columns: 1fr;
+    }
+
+    .tabs {
+        flex-direction: column;
+        border-bottom: none;
+    }
+
+    .tab {
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .tab.active {
+        border-bottom: 1px solid #007bff;
+        border-left: 4px solid #007bff;
+    }
+}
