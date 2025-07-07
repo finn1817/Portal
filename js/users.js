@@ -1,6 +1,6 @@
 // User management functionality
 import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
-import { userDb } from '/Portal/js/firebase-config.js';
+import { userDb } from './firebase-config.js';
 
 // Global variable for tracking users
 let users = [];

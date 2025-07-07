@@ -1,6 +1,6 @@
 // Workplace core functionality
 import { collection, doc, getDoc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
-import { workplaceDb } from '/Portal/js/firebase-config.js';
+import { workplaceDb } from './firebase-config.js';
 
 // Global variables
 window.selectedWorkplace = null;
