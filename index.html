@@ -4,48 +4,279 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workplace Scheduler - Login</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/login.css">
+    <style>
+        /* Inline CSS for testing */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .login-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .login-btn, .register-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        .login-btn:hover, .register-btn:hover {
+            background: #764ba2;
+        }
+        .error-message {
+            color: #dc3545;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        .register-text, .login-text {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        .register-text a, .login-text a {
+            color: #667eea;
+            font-weight: 600;
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-card">
-            <h1>Workplace Scheduler</h1>
-            <div class="login-form">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" placeholder="Enter your email" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="Enter your password" required>
-                </div>
-                <button id="loginBtn" class="login-btn">Login</button>
-                <div id="loginError" class="error-message"></div>
-                <p class="register-text">Don't have an account? <a href="#" id="showRegister">Register</a></p>
+    <div class="login-card">
+        <h1 style="text-align: center; margin-bottom: 1.5rem; color: #333;">Workplace Scheduler</h1>
+        <div class="login-form">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="Enter your email" required>
             </div>
-            <div class="register-form" style="display: none;">
-                <div class="form-group">
-                    <label for="registerEmail">Email</label>
-                    <input type="email" id="registerEmail" placeholder="Enter your email" required>
-                </div>
-                <div class="form-group">
-                    <label for="registerPassword">Password</label>
-                    <input type="password" id="registerPassword" placeholder="Enter your password" required>
-                </div>
-                <div class="form-group">
-                    <label for="confirmPassword">Confirm Password</label>
-                    <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
-                </div>
-                <button id="registerBtn" class="register-btn">Register</button>
-                <div id="registerError" class="error-message"></div>
-                <p class="login-text">Already have an account? <a href="#" id="showLogin">Login</a></p>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password" required>
             </div>
+            <button id="loginBtn" class="login-btn">Login</button>
+            <div id="loginError" class="error-message"></div>
+            <p class="register-text">Don't have an account? <a href="#" id="showRegister">Register</a></p>
+        </div>
+        <div class="register-form" style="display: none;">
+            <div class="form-group">
+                <label for="registerEmail">Email</label>
+                <input type="email" id="registerEmail" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label for="registerPassword">Password</label>
+                <input type="password" id="registerPassword" placeholder="Enter your password" required>
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
+            </div>
+            <button id="registerBtn" class="register-btn">Register</button>
+            <div id="registerError" class="error-message"></div>
+            <p class="login-text">Already have an account? <a href="#" id="showLogin">Login</a></p>
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script type="module" src="js/firebase-config.js"></script>
-    <script type="module" src="js/auth.js"></script>
+    <!-- Test Firebase with CDN first -->
+    <script type="module">
+        console.log('🔥 Starting Firebase initialization...');
+        
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+        import { getFirestore, collection, getDocs, query, where, addDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+
+        console.log('✅ Firebase modules imported successfully');
+
+        // Firebase config
+        const userFirebaseConfig = {
+            apiKey: "AIzaSyAt_HJiP_uuWC7-AqMKlfLwjQFsESjB364",
+            authDomain: "my-admin-dashboard-b9c89.firebaseapp.com",
+            projectId: "my-admin-dashboard-b9c89",
+            storageBucket: "my-admin-dashboard-b9c89.firebasestorage.app",
+            messagingSenderId: "1001105953619",
+            appId: "1:1001105953619:web:1e2cf52a9ff37aeb5207a6",
+            measurementId: "G-DGTX5YCKYF"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(userFirebaseConfig);
+        const db = getFirestore(app);
+        
+        console.log('✅ Firebase initialized successfully');
+
+        // Form toggle functionality
+        const showRegisterLink = document.getElementById('showRegister');
+        const showLoginLink = document.getElementById('showLogin');
+        const loginForm = document.querySelector('.login-form');
+        const registerForm = document.querySelector('.register-form');
+        
+        showRegisterLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+        });
+        
+        showLoginLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            registerForm.style.display = 'none';
+            loginForm.style.display = 'block';
+        });
+
+        // Login functionality
+        document.getElementById('loginBtn').addEventListener('click', async function() {
+            console.log('🔐 Login button clicked');
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginError = document.getElementById('loginError');
+            
+            if (!email || !password) {
+                loginError.textContent = 'Please enter both email and password.';
+                return;
+            }
+            
+            try {
+                console.log('🔍 Searching for user:', email);
+                loginError.textContent = '';
+                this.disabled = true;
+                this.textContent = 'Logging in...';
+                
+                const usersRef = collection(db, 'users');
+                const q = query(usersRef, where('email', '==', email));
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    loginError.textContent = 'Invalid email or password.';
+                    this.disabled = false;
+                    this.textContent = 'Login';
+                    return;
+                }
+                
+                let userFound = false;
+                querySnapshot.forEach((doc) => {
+                    const userData = doc.data();
+                    if (userData.password === password) {
+                        userFound = true;
+                        console.log('✅ Login successful');
+                        
+                        const user = {
+                            id: doc.id,
+                            email: userData.email,
+                            isAdmin: userData.isAdmin || 0,
+                            lastLogin: new Date().toISOString()
+                        };
+                        
+                        localStorage.setItem('user', JSON.stringify(user));
+                        window.location.href = 'dashboard.html';
+                    }
+                });
+                
+                if (!userFound) {
+                    loginError.textContent = 'Invalid email or password.';
+                }
+                
+                this.disabled = false;
+                this.textContent = 'Login';
+                
+            } catch (error) {
+                console.error('❌ Login error:', error);
+                loginError.textContent = 'An error occurred during login: ' + error.message;
+                this.disabled = false;
+                this.textContent = 'Login';
+            }
+        });
+
+        // Register functionality
+        document.getElementById('registerBtn').addEventListener('click', async function() {
+            console.log('📝 Register button clicked');
+            
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const registerError = document.getElementById('registerError');
+            
+            if (!email || !password || !confirmPassword) {
+                registerError.textContent = 'Please fill in all fields.';
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                registerError.textContent = 'Passwords do not match.';
+                return;
+            }
+            
+            try {
+                registerError.textContent = '';
+                this.disabled = true;
+                this.textContent = 'Registering...';
+                
+                const usersRef = collection(db, 'users');
+                const q = query(usersRef, where('email', '==', email));
+                const querySnapshot = await getDocs(q);
+                
+                if (!querySnapshot.empty) {
+                    registerError.textContent = 'Email is already registered.';
+                    this.disabled = false;
+                    this.textContent = 'Register';
+                    return;
+                }
+                
+                const newUser = {
+                    email: email,
+                    password: password,
+                    isAdmin: 0,
+                    createdAt: new Date().toISOString()
+                };
+                
+                await addDoc(usersRef, newUser);
+                console.log('✅ User registered successfully');
+                
+                alert('Registration successful! Please log in.');
+                registerForm.style.display = 'none';
+                loginForm.style.display = 'block';
+                
+                this.disabled = false;
+                this.textContent = 'Register';
+                
+            } catch (error) {
+                console.error('❌ Registration error:', error);
+                registerError.textContent = 'An error occurred during registration: ' + error.message;
+                this.disabled = false;
+                this.textContent = 'Register';
+            }
+        });
+
+        console.log('🎉 All event listeners attached');
+    </script>
 </body>
 </html>
