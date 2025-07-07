@@ -1309,7 +1309,7 @@
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
-        import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy, getDoc, setDoc, where } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+        import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy, getDoc, setDoc, where, limit } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
         // User Management Firebase Config
         const userFirebaseConfig = {
@@ -1398,8 +1398,33 @@
             }
         };
 
+        // Initialize workplace document if it doesn't exist
+        async function initializeWorkplace(workplace) {
+            try {
+                const workplaceRef = doc(workplaceDb, 'workplaces', workplace);
+                const workplaceDoc = await getDoc(workplaceRef);
+                
+                if (!workplaceDoc.exists()) {
+                    console.log(`Creating new workplace document for ${workplace}`);
+                    await setDoc(workplaceRef, {
+                        name: workplace.replace('_', ' ').toUpperCase(),
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                        hours_of_operation: {}
+                    });
+                    
+                    return true;
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('❌ Error initializing workplace:', error);
+                return false;
+            }
+        }
+
         // Workplace Management Functions
-        window.selectWorkplace = function(workplace) {
+        window.selectWorkplace = async function(workplace) {
             selectedWorkplace = workplace;
             
             // Update visual selection
@@ -1407,6 +1432,9 @@
                 card.classList.remove('selected');
             });
             event.target.closest('.workplace-card').classList.add('selected');
+            
+            // Ensure the workplace document exists
+            await initializeWorkplace(workplace);
             
             // Show workplace content
             document.getElementById('workplaceContent').style.display = 'block';
@@ -1450,6 +1478,11 @@
         async function loadWorkplaceData(workplace) {
             try {
                 console.log(`🔍 Loading data for ${workplace} from workplaces collection`);
+                
+                // Ensure workplace document exists
+                await initializeWorkplace(workplace);
+                
+                // Load workers for the workplace
                 loadWorkers(workplace);
             } catch (error) {
                 console.error('❌ Error loading workplace data:', error);
@@ -1461,6 +1494,9 @@
             try {
                 document.getElementById('workersLoading').style.display = 'block';
                 document.getElementById('workersContainer').style.display = 'none';
+                
+                // Ensure workplace document exists
+                await initializeWorkplace(workplace);
                 
                 console.log(`🔍 Loading workers from workplaces/${workplace}/workers collection`);
                 
@@ -1569,6 +1605,9 @@
             }
 
             try {
+                // Ensure workplace document exists
+                await initializeWorkplace(selectedWorkplace);
+                
                 console.log(`➕ Adding worker to workplaces/${selectedWorkplace}/workers collection`);
                 
                 // Parse availability text to structured format
@@ -1704,6 +1743,9 @@
             try {
                 document.getElementById('hoursLoading').style.display = 'block';
                 
+                // Ensure workplace document exists
+                await initializeWorkplace(workplace);
+                
                 console.log(`🔍 Loading hours for workplaces/${workplace}`);
                 
                 // Get the workplace document which contains hours_of_operation
@@ -1781,6 +1823,9 @@
             }
 
             try {
+                // Ensure workplace document exists
+                await initializeWorkplace(selectedWorkplace);
+                
                 const hoursOfOperation = {};
 
                 DAYS.forEach(day => {
@@ -2017,7 +2062,7 @@
                         
                         // Process removals
                         changes.removed.forEach(email => {
-                            const rawIndex = shift.raw_assigned.indexOf(email);
+                            const rawIndex = shift.raw_assigned ? shift.raw_assigned.indexOf(email) : -1;
                             if (rawIndex > -1) {
                                 shift.raw_assigned.splice(rawIndex, 1);
                                 
@@ -2035,6 +2080,10 @@
                         
                         // Process additions
                         changes.added.forEach(email => {
+                            if (!shift.raw_assigned) {
+                                shift.raw_assigned = [];
+                            }
+                            
                             if (!shift.raw_assigned.includes(email)) {
                                 shift.raw_assigned.push(email);
                                 
@@ -2042,15 +2091,19 @@
                                 const worker = workers.find(w => w.email === email);
                                 if (worker) {
                                     const name = `${worker.first_name} ${worker.last_name}`;
+                                    if (!shift.assigned) {
+                                        shift.assigned = [];
+                                    }
                                     shift.assigned.push(name);
                                 }
                             }
                         });
                         
                         // If no workers assigned, mark as Unfilled
-                        if (shift.raw_assigned.length === 0) {
+                        if (!shift.raw_assigned || shift.raw_assigned.length === 0) {
                             shift.assigned = ['Unfilled'];
-                        } else if (shift.assigned.includes('Unfilled')) {
+                            if (!shift.raw_assigned) shift.raw_assigned = [];
+                        } else if (shift.assigned && shift.assigned.includes('Unfilled')) {
                             // Remove 'Unfilled' if workers are assigned
                             const unfilledIndex = shift.assigned.indexOf('Unfilled');
                             if (unfilledIndex > -1) {
@@ -2080,6 +2133,9 @@
         // Save schedule to Firebase
         async function saveScheduleToFirebase(schedule) {
             try {
+                // Ensure workplace document exists
+                await initializeWorkplace(selectedWorkplace);
+                
                 // Create a formatted schedule for Firebase
                 const scheduleData = {
                     days: schedule,
@@ -2090,11 +2146,14 @@
                 
                 // Save to Firebase - first to schedules collection
                 const schedulesRef = collection(workplaceDb, 'workplaces', selectedWorkplace, 'schedules');
-                await addDoc(schedulesRef, scheduleData);
+                const docRef = await addDoc(schedulesRef, scheduleData);
                 
-                // Also save as current schedule
-                const currentScheduleRef = doc(workplaceDb, 'workplaces', selectedWorkplace, 'current_schedule');
-                await setDoc(currentScheduleRef, scheduleData);
+                // Update the workplace document with current schedule ID
+                const workplaceRef = doc(workplaceDb, 'workplaces', selectedWorkplace);
+                await updateDoc(workplaceRef, {
+                    current_schedule_id: docRef.id,
+                    updated_at: new Date().toISOString()
+                });
                 
                 return true;
             } catch (error) {
@@ -2106,11 +2165,50 @@
         // Get current schedule from Firebase
         async function loadCurrentSchedule() {
             try {
-                const currentScheduleRef = doc(workplaceDb, 'workplaces', selectedWorkplace, 'current_schedule');
-                const docSnap = await getDoc(currentScheduleRef);
+                // Ensure workplace document exists
+                await initializeWorkplace(selectedWorkplace);
                 
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
+                const workplaceRef = doc(workplaceDb, 'workplaces', selectedWorkplace);
+                const workplaceDoc = await getDoc(workplaceRef);
+                
+                if (workplaceDoc.exists()) {
+                    const data = workplaceDoc.data();
+                    const currentScheduleId = data.current_schedule_id;
+                    
+                    if (currentScheduleId) {
+                        // Get schedule from the schedules subcollection
+                        const scheduleRef = doc(workplaceDb, 'workplaces', selectedWorkplace, 'schedules', currentScheduleId);
+                        const scheduleDoc = await getDoc(scheduleRef);
+                        
+                        if (scheduleDoc.exists()) {
+                            const data = scheduleDoc.data();
+                            // The schedule might be directly in the document or in a 'days' field
+                            if (data.days) {
+                                currentSchedule = data.days;
+                                return data.days;
+                            } else {
+                                currentSchedule = data;
+                                return data;
+                            }
+                        }
+                    }
+                }
+                
+                // If no current schedule ID or document not found, look for the most recent
+                const schedulesRef = collection(workplaceDb, 'workplaces', selectedWorkplace, 'schedules');
+                const querySnapshot = await getDocs(query(schedulesRef, orderBy('created_at', 'desc'), limit(1)));
+                
+                if (!querySnapshot.empty) {
+                    const scheduleDoc = querySnapshot.docs[0];
+                    const data = scheduleDoc.data();
+                    
+                    // Update the workplace with this schedule ID
+                    const workplaceRef = doc(workplaceDb, 'workplaces', selectedWorkplace);
+                    await updateDoc(workplaceRef, {
+                        current_schedule_id: scheduleDoc.id,
+                        updated_at: new Date().toISOString()
+                    });
+                    
                     // The schedule might be directly in the document or in a 'days' field
                     if (data.days) {
                         currentSchedule = data.days;
@@ -2118,23 +2216,6 @@
                     } else {
                         currentSchedule = data;
                         return data;
-                    }
-                } else {
-                    // Try to find the most recent schedule in the schedules collection
-                    const schedulesRef = collection(workplaceDb, 'workplaces', selectedWorkplace, 'schedules');
-                    const querySnapshot = await getDocs(query(schedulesRef, orderBy('created_at', 'desc'), limit(1)));
-                    
-                    if (!querySnapshot.empty) {
-                        const scheduleDoc = querySnapshot.docs[0];
-                        const data = scheduleDoc.data();
-                        
-                        if (data.days) {
-                            currentSchedule = data.days;
-                            return data.days;
-                        } else {
-                            currentSchedule = data;
-                            return data;
-                        }
                     }
                 }
                 
@@ -2210,7 +2291,7 @@
             // Calculate some statistics
             const totalShifts = Object.values(schedule).flat().length;
             const unfilledShifts = Object.values(schedule).flat().filter(shift => 
-                shift.assigned.includes('Unfilled')).length;
+                shift.assigned && shift.assigned.includes('Unfilled')).length;
             const assignedWorkers = Object.keys(assignedHours).length;
             
             let html = `
@@ -2253,7 +2334,7 @@
                 html += `<div class="schedule-day-header">${day}</div>`;
                 
                 shifts.forEach(shift => {
-                    const isUnfilled = shift.assigned.includes('Unfilled');
+                    const isUnfilled = shift.assigned && shift.assigned.includes('Unfilled');
                     html += `
                         <div class="schedule-shift ${isUnfilled ? 'unfilled' : ''}">
                             <div class="schedule-time">${formatTimeAMPM(shift.start)} - ${formatTimeAMPM(shift.end)}</div>
@@ -2454,12 +2535,12 @@
                 `;
                 
                 shifts.forEach(shift => {
-                    const isUnfilled = shift.assigned.includes('Unfilled');
+                    const isUnfilled = shift.assigned && shift.assigned.includes('Unfilled');
                     printContent += `
                         <tr>
                             <td>${formatTimeAMPM(shift.start)} - ${formatTimeAMPM(shift.end)}</td>
                             <td class="${isUnfilled ? 'unfilled' : ''}">
-                                ${shift.assigned.join(', ')}
+                                ${shift.assigned ? shift.assigned.join(', ') : 'Unassigned'}
                             </td>
                         </tr>
                     `;
@@ -2620,6 +2701,9 @@
                 return workers;
             }
             
+            // Ensure workplace document exists
+            await initializeWorkplace(workplace);
+            
             const workersQuery = query(collection(workplaceDb, 'workplaces', workplace, 'workers'));
             const querySnapshot = await getDocs(workersQuery);
             
@@ -2656,6 +2740,9 @@
         
         // Load hours of operation for scheduling
         async function loadHoursForScheduling(workplace) {
+            // Ensure workplace document exists
+            await initializeWorkplace(workplace);
+            
             const workplaceRef = doc(workplaceDb, 'workplaces', workplace);
             const workplaceDoc = await getDoc(workplaceRef);
             
