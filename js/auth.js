@@ -1,6 +1,6 @@
 // Authentication logic for login/register
 import { collection, getDocs, query, where, addDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
-import { userDb } from './firebase-config.js';
+import { userDb } from 'Portal/js/firebase-config.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Toggle between login and register forms

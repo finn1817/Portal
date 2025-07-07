@@ -1,6 +1,6 @@
 // Worker management
 import { collection, getDocs, doc, deleteDoc, addDoc, query, getDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
-import { workplaceDb } from './firebase-config.js';
+import { workplaceDb } from '/Portal/js/firebase-config.js';
 
 // Global workers array
 window.workers = [];

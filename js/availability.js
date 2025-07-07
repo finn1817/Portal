@@ -1,5 +1,5 @@
 // Last minute availability checking
-import { workplaceDb } from './firebase-config.js';
+import { workplaceDb } from '/Portal/js/firebase-config.js';
 
 // Add event listeners
 document.addEventListener('DOMContentLoaded', function() {

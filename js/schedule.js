@@ -1,6 +1,6 @@
 // Schedule generation and management
 import { collection, getDocs, doc, updateDoc, getDoc, addDoc, query, orderBy, limit, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
-import { workplaceDb, DAYS } from './firebase-config.js';
+import { workplaceDb, DAYS } from '/Portal/js/firebase-config.js';
 
 // Global variables
 window.currentSchedule = null;

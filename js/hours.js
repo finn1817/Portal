@@ -1,6 +1,6 @@
 // Hours of operation management
 import { doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
-import { workplaceDb, DAYS } from './firebase-config.js';
+import { workplaceDb, DAYS } from '/Portal/js/firebase-config.js';
 
 // Add event listeners
 document.addEventListener('DOMContentLoaded', function() {
