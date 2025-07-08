@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Dashboard</title>
+    <style>
+        .workplace-card {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 10px;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+        .workplace-card:hover {
+            background-color: #f0f0f0;
+        }
+        .workplace-card.selected {
+            background-color: #e7f3ff;
+            border-color: #007bff;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ccc;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-bottom: none;
+        }
+        .tab.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Workplace Scheduler Test</h1>
+    
+    <!-- Workplace Selection -->
+    <h2>Select Workplace</h2>
+    <div id="workplace-selector">
+        <div class="workplace-card" data-workplace="esports_lounge">
+            <h3>🎮 eSports Lounge</h3>
+            <p>Gaming tournaments and casual play</p>
+        </div>
+        <div class="workplace-card" data-workplace="esports_arena">
+            <h3>🏟️ eSports Arena</h3>
+            <p>Competitive gaming events</p>
+        </div>
+        <div class="workplace-card" data-workplace="it_service_center">
+            <h3>💻 IT Service Center</h3>
+            <p>Technical support and services</p>
+        </div>
+    </div>
+
+    <!-- Workplace Management -->
+    <div id="workplace-content" style="display: none;">
+        <h2 id="selected-workplace-name">Selected Workplace</h2>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" data-tab="workers">👥 Workers</div>
+            <div class="tab" data-tab="schedule">📅 Schedule</div>
+            <div class="tab" data-tab="hours">⏰ Hours</div>
+        </div>
+
+        <!-- Tab Contents -->
+        <div id="workers-tab" class="tab-content active">
+            <h3>Workers Management</h3>
+            <p>Workers functionality will go here.</p>
+            <div id="workers-list"></div>
+        </div>
+
+        <div id="schedule-tab" class="tab-content">
+            <h3>Schedule Management</h3>
+            <p>Schedule functionality will go here.</p>
+        </div>
+
+        <div id="hours-tab" class="tab-content">
+            <h3>Hours of Operation</h3>
+            <p>Hours functionality will go here.</p>
+        </div>
+    </div>
+
+    <script type="module">
+        // Test Firebase connection
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+        import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+
+        const workplaceFirebaseConfig = {
+            apiKey: "AIzaSyBkkq4nPnmyfSOKtVLsO95rpAUsMDA1o0A",
+            authDomain: "workplace-scheduler-ace38.firebaseapp.com",
+            projectId: "workplace-scheduler-ace38",
+            storageBucket: "workplace-scheduler-ace38.firebasestorage.app",
+            messagingSenderId: "153631302747",
+            appId: "1:153631302747:web:2c731351893dca19510b7e",
+            measurementId: "G-THHV6M3Z88"
+        };
+
+        const workplaceApp = initializeApp(workplaceFirebaseConfig, "workplace");
+        const workplaceDb = getFirestore(workplaceApp);
+
+        console.log("✅ Firebase initialized");
+
+        // Workplace selection
+        let selectedWorkplace = null;
+
+        function selectWorkplace(workplace) {
+            selectedWorkplace = workplace;
+            console.log("🏢 Selected workplace:", workplace);
+            
+            // Update UI
+            document.querySelectorAll('.workplace-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`[data-workplace="${workplace}"]`).classList.add('selected');
+            
+            // Show workplace content
+            document.getElementById('workplace-content').style.display = 'block';
+            
+            // Update name
+            const names = {
+                'esports_lounge': '🎮 eSports Lounge',
+                'esports_arena': '🏟️ eSports Arena',
+                'it_service_center': '💻 IT Service Center'
+            };
+            document.getElementById('selected-workplace-name').textContent = names[workplace];
+            
+            // Load workers
+            loadWorkers();
+        }
+
+        async function loadWorkers() {
+            if (!selectedWorkplace) return;
+            
+            try {
+                console.log(`🔍 Loading workers for ${selectedWorkplace}`);
+                const workersQuery = collection(workplaceDb, 'workplaces', selectedWorkplace, 'workers');
+                const querySnapshot = await getDocs(workersQuery);
+                
+                const workers = [];
+                querySnapshot.forEach((doc) => {
+                    workers.push({ id: doc.id, ...doc.data() });
+                });
+                
+                console.log(`✅ Found ${workers.length} workers`);
+                
+                // Display workers
+                const workersList = document.getElementById('workers-list');
+                if (workers.length === 0) {
+                    workersList.innerHTML = '<p>No workers found.</p>';
+                } else {
+                    workersList.innerHTML = `
+                        <h4>Workers (${workers.length})</h4>
+                        <ul>
+                            ${workers.map(w => `<li>${w['First Name']} ${w['Last Name']} - ${w['Email']}</li>`).join('')}
+                        </ul>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('❌ Error loading workers:', error);
+                document.getElementById('workers-list').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        function switchTab(tabName) {
+            // Remove active from all tabs and contents
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Add active to selected tab and content
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            console.log("📋 Switched to tab:", tabName);
+        }
+
+        // Event listeners
+        document.addEventListener('click', function(event) {
+            // Workplace card clicks
+            const workplaceCard = event.target.closest('.workplace-card');
+            if (workplaceCard) {
+                const workplace = workplaceCard.getAttribute('data-workplace');
+                selectWorkplace(workplace);
+            }
+            
+            // Tab clicks
+            const tab = event.target.closest('.tab');
+            if (tab) {
+                const tabName = tab.getAttribute('data-tab');
+                switchTab(tabName);
+            }
+        });
+
+        console.log("🎉 Dashboard ready!");
+    </script>
+</body>
+</html>
