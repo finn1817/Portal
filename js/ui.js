@@ -125,12 +125,17 @@ window.closeModal = function(modalId) {
 window.switchTab = function(tabName) {
     // Update tab buttons
     document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-    document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
-    
+    const tabBtn = document.querySelector(`.tab[data-tab="${tabName}"]`);
+    if (tabBtn) tabBtn.classList.add('active');
     // Update tab content
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-    document.getElementById(tabName + 'Tab').classList.add('active');
-    
+    // Patch: Only add 'active' if the tab content exists
+    const tabContent = document.getElementById(tabName + '-tab');
+    if (tabContent) {
+        tabContent.classList.add('active');
+    } else {
+        console.warn(`Tab content for '${tabName}' not found (id: ${tabName}-tab)`);
+    }
     // Load specific data for tab
     if (tabName === 'hours') {
         window.loadHours(window.selectedWorkplace);
