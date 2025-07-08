@@ -603,218 +603,220 @@
             </div>
         </div>
 
-        <nav class="tabs">
-            <button class="tab active" data-tab="workers">👥 Workers</button>
-            <button class="tab" data-tab="hours">🕒 Hours</button>
-            <button class="tab" data-tab="schedule">📅 Schedule</button>
-            <button class="tab" data-tab="reports">📊 Reports</button>
-            <button class="tab" data-tab="settings">⚙️ Settings</button>
-        </nav>
+        <div id="workplaceContent" style="display:none">
+            <nav class="tabs">
+                <button class="tab active" data-tab="workers">👥 Workers</button>
+                <button class="tab" data-tab="hours">🕒 Hours</button>
+                <button class="tab" data-tab="schedule">📅 Schedule</button>
+                <button class="tab" data-tab="reports">📊 Reports</button>
+                <button class="tab" data-tab="settings">⚙️ Settings</button>
+            </nav>
 
-        <main class="content">
-            <!-- Workers Tab -->
-            <div id="workers-tab" class="tab-content active">
-                <h2>👥 Workers Management</h2>
-                <p>Manage your team members and their availability.</p>
-                
-                <div class="form-group">
-                    <button class="btn btn-success" onclick="showAddWorkerForm()">➕ Add New Worker</button>
+            <main class="content">
+                <!-- Workers Tab -->
+                <div id="workers-tab" class="tab-content active">
+                    <h2>👥 Workers Management</h2>
+                    <p>Manage your team members and their availability.</p>
+                    
+                    <div class="form-group">
+                        <button class="btn btn-success" onclick="showAddWorkerForm()">➕ Add New Worker</button>
+                    </div>
+
+                    <div id="addWorkerForm" class="form-group hidden">
+                        <h3>Add New Worker</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>First Name</label>
+                                <input type="text" id="firstName" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Last Name</label>
+                                <input type="text" id="lastName" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="email" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Work Study Student</label>
+                                <select id="workStudy" class="form-control">
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <h4>Availability</h4>
+                        <div class="availability-grid" id="availabilityGrid">
+                            <!-- Availability slots will be populated by JavaScript -->
+                        </div>
+                        
+                        <div style="margin-top: 1rem;">
+                            <button class="btn btn-success" onclick="addWorker()">Add Worker</button>
+                            <button class="btn btn-secondary" onclick="hideAddWorkerForm()">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Add missing containers for JS compatibility -->
+                    <div id="workersLoading" class="loading" style="display:none;">Loading workers...</div>
+                    <div id="workersContainer" style="display:none;">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Work Study</th>
+                                    <th>Availability</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="workersTableBody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="workersContent">
+                        <div class="loading">Select a workplace to view workers.</div>
+                    </div>
                 </div>
 
-                <div id="addWorkerForm" class="form-group hidden">
-                    <h3>Add New Worker</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>First Name</label>
-                            <input type="text" id="firstName" class="form-control" required>
+                <!-- Hours Tab -->
+                <div id="hours-tab" class="tab-content hidden">
+                    <h2>🕒 Hours of Operation</h2>
+                    <p>Set operating hours for each day of the week.</p>
+                    
+                    <!-- Add missing container for JS compatibility -->
+                    <div id="hoursLoading" class="loading" style="display:none;">Loading hours...</div>
+                    <div id="hoursSchedule"></div>
+
+                    <div id="hoursContent">
+                        <div class="loading">Select a workplace to manage hours.</div>
+                    </div>
+                </div>
+
+                <!-- Schedule Tab -->
+                <div id="schedule-tab" class="tab-content hidden">
+                    <h2>📅 Schedule Management</h2>
+                    <p>Generate and manage work schedules.</p>
+                    
+                    <div class="schedule-options">
+                        <div class="schedule-option" id="generateScheduleOption">
+                            <h4>🔄 Generate New Schedule</h4>
+                            <p>Create an optimized schedule based on availability</p>
                         </div>
-                        <div class="form-group">
-                            <label>Last Name</label>
-                            <input type="text" id="lastName" class="form-control" required>
+                        <div class="schedule-option" id="viewCurrentScheduleOption">
+                            <h4>👁️ View Current Schedule</h4>
+                            <p>Display the active schedule</p>
                         </div>
-                        <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" id="email" class="form-control" required>
+                        <div class="schedule-option" id="shiftOverrideOption">
+                            <h4>✏️ Modify Shifts</h4>
+                            <p>Make manual adjustments to schedules</p>
                         </div>
+                        <div class="schedule-option" id="scheduleHistoryOption">
+                            <h4>📚 Schedule History</h4>
+                            <p>View and manage past schedules</p>
+                        </div>
+                    </div>
+
+                    <!-- Generate Schedule Form -->
+                    <div id="generateScheduleForm" class="schedule-form">
+                        <h4>🔄 Generate Schedule Settings</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="maxHoursPerWorker">Max Hours per Worker</label>
+                                <input type="number" id="maxHoursPerWorker" class="form-control" value="20" min="1" max="40">
+                            </div>
+                            <div class="form-group">
+                                <label for="maxWorkersPerShift">Max Workers per Shift</label>
+                                <input type="number" id="maxWorkersPerShift" class="form-control" value="2" min="1" max="10">
+                            </div>
+                            <div class="form-group">
+                                <label for="minHoursPerWorker">Min Hours per Worker</label>
+                                <input type="number" id="minHoursPerWorker" class="form-control" value="3" min="1" max="20">
+                            </div>
+                        </div>
+                        <div>
+                            <button class="btn btn-success" id="generateScheduleBtn">🚀 Generate Schedule</button>
+                            <button class="btn btn-secondary" id="cancelGenerateBtn">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Shift Override Section -->
+                    <div id="shiftOverrideSection" class="schedule-form">
+                        <h4>✏️ Modify Shift Assignments</h4>
+                        <div id="shiftOverrideContent">
+                            <!-- Shift override content will be populated by JavaScript -->
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <button class="btn btn-success" id="saveOverridesBtn">💾 Save Changes</button>
+                            <button class="btn btn-secondary" id="cancelOverrideBtn">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Schedule History Section -->
+                    <div id="scheduleHistorySection" class="schedule-form">
+                        <h4>📚 Schedule History</h4>
+                        <div id="scheduleHistoryList">
+                            <!-- Schedule history will be populated by JavaScript -->
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <button class="btn btn-secondary" id="backToScheduleBtn">← Back to Schedule</button>
+                        </div>
+                    </div>
+
+                    <div id="scheduleContent">
+                        <div class="loading">Select a workplace and choose an option above to get started.</div>
+                    </div>
+                </div>
+
+                <!-- Reports Tab -->
+                <div id="reports-tab" class="tab-content hidden">
+                    <h2>📊 Reports & Analytics</h2>
+                    <p>View detailed reports and analytics.</p>
+                    
+                    <div id="reportsContent">
+                        <div class="loading">Select a workplace to view reports.</div>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="settings-tab" class="tab-content hidden">
+                    <h2>⚙️ Settings</h2>
+                    <p>Manage application settings and preferences.</p>
+                    
+                    <div id="settingsContent">
                         <div class="form-group">
-                            <label>Work Study Student</label>
-                            <select id="workStudy" class="form-control">
-                                <option value="No">No</option>
-                                <option value="Yes">Yes</option>
+                            <label>Theme</label>
+                            <select class="form-control" id="themeSelector">
+                                <option value="light">Light</option>
+                                <option value="dark">Dark</option>
                             </select>
                         </div>
-                    </div>
-                    
-                    <h4>Availability</h4>
-                    <div class="availability-grid" id="availabilityGrid">
-                        <!-- Availability slots will be populated by JavaScript -->
-                    </div>
-                    
-                    <div style="margin-top: 1rem;">
-                        <button class="btn btn-success" onclick="addWorker()">Add Worker</button>
-                        <button class="btn btn-secondary" onclick="hideAddWorkerForm()">Cancel</button>
-                    </div>
-                </div>
-
-                <!-- Add missing containers for JS compatibility -->
-                <div id="workersLoading" class="loading" style="display:none;">Loading workers...</div>
-                <div id="workersContainer" style="display:none;">
-                    <table class="user-table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Work Study</th>
-                                <th>Availability</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="workersTableBody">
-                            <!-- Populated by JS -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <div id="workersContent">
-                    <div class="loading">Select a workplace to view workers.</div>
-                </div>
-            </div>
-
-            <!-- Hours Tab -->
-            <div id="hours-tab" class="tab-content hidden">
-                <h2>🕒 Hours of Operation</h2>
-                <p>Set operating hours for each day of the week.</p>
-                
-                <!-- Add missing container for JS compatibility -->
-                <div id="hoursLoading" class="loading" style="display:none;">Loading hours...</div>
-                <div id="hoursSchedule"></div>
-
-                <div id="hoursContent">
-                    <div class="loading">Select a workplace to manage hours.</div>
-                </div>
-            </div>
-
-            <!-- Schedule Tab -->
-            <div id="schedule-tab" class="tab-content hidden">
-                <h2>📅 Schedule Management</h2>
-                <p>Generate and manage work schedules.</p>
-                
-                <div class="schedule-options">
-                    <div class="schedule-option" id="generateScheduleOption">
-                        <h4>🔄 Generate New Schedule</h4>
-                        <p>Create an optimized schedule based on availability</p>
-                    </div>
-                    <div class="schedule-option" id="viewCurrentScheduleOption">
-                        <h4>👁️ View Current Schedule</h4>
-                        <p>Display the active schedule</p>
-                    </div>
-                    <div class="schedule-option" id="shiftOverrideOption">
-                        <h4>✏️ Modify Shifts</h4>
-                        <p>Make manual adjustments to schedules</p>
-                    </div>
-                    <div class="schedule-option" id="scheduleHistoryOption">
-                        <h4>📚 Schedule History</h4>
-                        <p>View and manage past schedules</p>
-                    </div>
-                </div>
-
-                <!-- Generate Schedule Form -->
-                <div id="generateScheduleForm" class="schedule-form">
-                    <h4>🔄 Generate Schedule Settings</h4>
-                    <div class="form-row">
+                        
                         <div class="form-group">
-                            <label for="maxHoursPerWorker">Max Hours per Worker</label>
-                            <input type="number" id="maxHoursPerWorker" class="form-control" value="20" min="1" max="40">
+                            <label>Notifications</label>
+                            <div>
+                                <label>
+                                    <input type="checkbox" id="emailNotifications" checked>
+                                    Email Notifications
+                                </label>
+                            </div>
+                            <div>
+                                <label>
+                                    <input type="checkbox" id="pushNotifications" checked>
+                                    Push Notifications
+                                </label>
+                            </div>
                         </div>
+                        
                         <div class="form-group">
-                            <label for="maxWorkersPerShift">Max Workers per Shift</label>
-                            <input type="number" id="maxWorkersPerShift" class="form-control" value="2" min="1" max="10">
-                        </div>
-                        <div class="form-group">
-                            <label for="minHoursPerWorker">Min Hours per Worker</label>
-                            <input type="number" id="minHoursPerWorker" class="form-control" value="3" min="1" max="20">
+                            <button class="btn btn-success" onclick="saveSettings()">💾 Save Settings</button>
                         </div>
                     </div>
-                    <div>
-                        <button class="btn btn-success" id="generateScheduleBtn">🚀 Generate Schedule</button>
-                        <button class="btn btn-secondary" id="cancelGenerateBtn">Cancel</button>
-                    </div>
                 </div>
-
-                <!-- Shift Override Section -->
-                <div id="shiftOverrideSection" class="schedule-form">
-                    <h4>✏️ Modify Shift Assignments</h4>
-                    <div id="shiftOverrideContent">
-                        <!-- Shift override content will be populated by JavaScript -->
-                    </div>
-                    <div style="margin-top: 1rem;">
-                        <button class="btn btn-success" id="saveOverridesBtn">💾 Save Changes</button>
-                        <button class="btn btn-secondary" id="cancelOverrideBtn">Cancel</button>
-                    </div>
-                </div>
-
-                <!-- Schedule History Section -->
-                <div id="scheduleHistorySection" class="schedule-form">
-                    <h4>📚 Schedule History</h4>
-                    <div id="scheduleHistoryList">
-                        <!-- Schedule history will be populated by JavaScript -->
-                    </div>
-                    <div style="margin-top: 1rem;">
-                        <button class="btn btn-secondary" id="backToScheduleBtn">← Back to Schedule</button>
-                    </div>
-                </div>
-
-                <div id="scheduleContent">
-                    <div class="loading">Select a workplace and choose an option above to get started.</div>
-                </div>
-            </div>
-
-            <!-- Reports Tab -->
-            <div id="reports-tab" class="tab-content hidden">
-                <h2>📊 Reports & Analytics</h2>
-                <p>View detailed reports and analytics.</p>
-                
-                <div id="reportsContent">
-                    <div class="loading">Select a workplace to view reports.</div>
-                </div>
-            </div>
-
-            <!-- Settings Tab -->
-            <div id="settings-tab" class="tab-content hidden">
-                <h2>⚙️ Settings</h2>
-                <p>Manage application settings and preferences.</p>
-                
-                <div id="settingsContent">
-                    <div class="form-group">
-                        <label>Theme</label>
-                        <select class="form-control" id="themeSelector">
-                            <option value="light">Light</option>
-                            <option value="dark">Dark</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Notifications</label>
-                        <div>
-                            <label>
-                                <input type="checkbox" id="emailNotifications" checked>
-                                Email Notifications
-                            </label>
-                        </div>
-                        <div>
-                            <label>
-                                <input type="checkbox" id="pushNotifications" checked>
-                                Push Notifications
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <button class="btn btn-success" onclick="saveSettings()">💾 Save Settings</button>
-                    </div>
-                </div>
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
 
     <!-- Initialize the app -->
