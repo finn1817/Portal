@@ -268,6 +268,51 @@
             color: #6c757d;
         }
 
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .user-table th,
+        .user-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .user-table th {
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-admin {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-user {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .action-btn {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+            margin: 0 0.25rem;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+
         @media (max-width: 768px) {
             .workplace-selector {
                 grid-template-columns: 1fr;
@@ -424,42 +469,130 @@
 
                     <!-- Workers List -->
                     <div id="workersLoading" class="loading">Loading workers...</div>
-                    <div id="workersList">
-                        <!-- Workers will be displayed here -->
+                    <div id="workersContainer" style="display: none;">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Work Study</th>
+                                    <th>Availability</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="workersTableBody">
+                                <!-- Workers will be populated here -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
                 <!-- Schedule Tab -->
                 <div id="scheduleTab" class="tab-content">
                     <h4>Schedule Management</h4>
-                    <p>Schedule management features will be available here.</p>
-                    <div style="padding: 2rem; background: #f8f9fa; border-radius: 8px; margin-top: 1rem;">
-                        <h5>🔄 Generate Schedule</h5>
-                        <p>Create automated schedules based on worker availability.</p>
-                        <br>
-                        <h5>👁️ View Current Schedule</h5>
-                        <p>See the currently active schedule.</p>
-                        <br>
-                        <h5>✏️ Shift Override</h5>
-                        <p>Manually adjust worker assignments.</p>
+                    <div id="scheduleOptions" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                        <div class="feature-card" onclick="showGenerateScheduleForm()" style="padding: 1rem;">
+                            <div style="font-size: 2rem;">🔄</div>
+                            <div style="font-weight: bold;">Generate Schedule</div>
+                        </div>
+                        <div class="feature-card" onclick="viewCurrentSchedule()" style="padding: 1rem;">
+                            <div style="font-size: 2rem;">👁️</div>
+                            <div style="font-weight: bold;">View Current</div>
+                        </div>
+                        <div class="feature-card" onclick="openShiftOverride()" style="padding: 1rem;">
+                            <div style="font-size: 2rem;">✏️</div>
+                            <div style="font-weight: bold;">Shift Override</div>
+                        </div>
+                        <div class="feature-card" onclick="viewScheduleHistory()" style="padding: 1rem;">
+                            <div style="font-size: 2rem;">📋</div>
+                            <div style="font-weight: bold;">History</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Generate Schedule Form -->
+                    <div id="generateScheduleForm" style="display: none; padding: 1rem; background: #f8f9fa; border-radius: 8px; margin-bottom: 1rem;">
+                        <h5>Generate New Schedule</h5>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1rem 0;">
+                            <div>
+                                <label>Max Hours Per Worker:</label>
+                                <input type="number" id="maxHoursPerWorker" value="20" min="1" max="40">
+                            </div>
+                            <div>
+                                <label>Max Workers Per Shift:</label>
+                                <input type="number" id="maxWorkersPerShift" value="2" min="1" max="5">
+                            </div>
+                            <div>
+                                <label>Min Hours Per Worker:</label>
+                                <input type="number" id="minHoursPerWorker" value="3" min="1" max="20">
+                            </div>
+                        </div>
+                        <button onclick="generateSchedule()" style="background: #007bff; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; margin-right: 0.5rem;">Generate</button>
+                        <button onclick="hideGenerateScheduleForm()" style="background: #6c757d; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px;">Cancel</button>
+                    </div>
+                    
+                    <!-- Schedule Content -->
+                    <div id="scheduleContent">
+                        <p>Select an option above to get started.</p>
+                    </div>
+                    
+                    <!-- Shift Override Section -->
+                    <div id="shiftOverrideSection" style="display: none;">
+                        <h5>Shift Override</h5>
+                        <div id="shiftOverrideContent"></div>
+                        <button id="saveOverridesBtn" style="background: #28a745; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; margin-right: 0.5rem;">Save Changes</button>
+                        <button id="cancelOverrideBtn" style="background: #6c757d; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px;">Cancel</button>
+                    </div>
+                    
+                    <!-- Schedule History Section -->
+                    <div id="scheduleHistorySection" style="display: none;">
+                        <h5>Schedule History</h5>
+                        <div id="scheduleHistoryList" style="border: 1px solid #dee2e6; border-radius: 4px; margin: 1rem 0;"></div>
+                        <button id="backToScheduleBtn" style="background: #6c757d; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px;">Back</button>
                     </div>
                 </div>
 
                 <!-- Hours Tab -->
                 <div id="hoursTab" class="tab-content">
                     <h4>Hours of Operation</h4>
-                    <p>Manage operating hours for this workplace.</p>
-                    <div style="padding: 2rem; background: #f8f9fa; border-radius: 8px; margin-top: 1rem;">
-                        <p>Set the hours when this workplace is open and needs staff coverage.</p>
-                    </div>
+                    <div id="hoursLoading" class="loading">Loading hours...</div>
+                    <div id="hoursContent"></div>
+                    <div id="hoursSchedule" style="margin: 1rem 0;"></div>
+                    <button id="saveHoursBtn" style="background: #28a745; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px;">Save Hours</button>
                 </div>
                 
                 <!-- Last Minute Tab -->
                 <div id="lastMinuteTab" class="tab-content">
                     <h4>Last Minute Availability</h4>
-                    <p>Check which workers are available for urgent shift coverage.</p>
-                    <div style="padding: 2rem; background: #f8f9fa; border-radius: 8px; margin-top: 1rem;">
-                        <p>🚨 Find workers who can cover emergency shifts or last-minute callouts.</p>
+                    <div style="padding: 1.5rem; background: #f8f9fa; border-radius: 8px; margin-bottom: 1rem;">
+                        <h5 style="color: #fd7e14; margin-bottom: 1rem;">🚨 Check Worker Availability</h5>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <label>Day:</label>
+                                <select id="lastMinuteDay">
+                                    <option value="Monday">Monday</option>
+                                    <option value="Tuesday">Tuesday</option>
+                                    <option value="Wednesday">Wednesday</option>
+                                    <option value="Thursday">Thursday</option>
+                                    <option value="Friday">Friday</option>
+                                    <option value="Saturday">Saturday</option>
+                                    <option value="Sunday">Sunday</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Start Time:</label>
+                                <input type="time" id="lastMinuteStart">
+                            </div>
+                            <div>
+                                <label>End Time:</label>
+                                <input type="time" id="lastMinuteEnd">
+                            </div>
+                        </div>
+                        <button id="checkAvailabilityBtn" style="background: #fd7e14; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px;">Check Availability</button>
+                    </div>
+                    
+                    <div id="lastMinuteResults" style="display: none;">
+                        <div id="availableWorkersCount" style="margin-bottom: 1rem; font-weight: bold;"></div>
+                        <div id="availableWorkersList" style="border: 1px solid #dee2e6; border-radius: 4px; padding: 1rem;"></div>
                     </div>
                 </div>
             </div>
@@ -471,7 +604,7 @@
         
         // Import Firebase modules
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
-        import { getFirestore, collection, getDocs, addDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+        import { getFirestore, collection, getDocs, addDoc, doc, getDoc, setDoc, updateDoc, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
         // Firebase configs
         const userFirebaseConfig = {
@@ -502,9 +635,14 @@
 
         console.log('✅ Firebase initialized successfully');
 
+        // Constants
+        const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
         // Global variables
         let selectedWorkplace = null;
         let workers = [];
+        let currentSchedule = null;
+        let draftSchedule = null;
 
         // Check if user is logged in
         const userData = JSON.parse(localStorage.getItem('user'));
@@ -527,6 +665,54 @@
                 document.body.classList.add('admin');
             }
         }
+
+        // Utility functions
+        window.formatTimeAMPM = function(timeStr) {
+            if (!timeStr) return '';
+            
+            let [hours, minutes] = timeStr.split(':').map(Number);
+            const period = hours >= 12 ? 'PM' : 'AM';
+            
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            
+            return `${hours}:${minutes.toString().padStart(2, '0')} ${period}`;
+        };
+
+        window.timeToHour = function(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            let hourNum = hours + (minutes / 60);
+            if (hours === 0 && minutes === 0) hourNum = 24; 
+            return hourNum;
+        };
+
+        window.hourToTimeStr = function(hour) {
+            const h = Math.floor(hour);
+            const m = Math.round((hour - h) * 60);
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+        };
+
+        // Initialize workplace document if it doesn't exist
+        window.initializeWorkplace = async function(workplace) {
+            try {
+                const workplaceRef = doc(workplaceDb, 'workplaces', workplace);
+                const workplaceDoc = await getDoc(workplaceRef);
+                
+                if (!workplaceDoc.exists()) {
+                    console.log(`Creating new workplace document for ${workplace}`);
+                    await setDoc(workplaceRef, {
+                        name: workplace.replace('_', ' ').toUpperCase(),
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                        hours_of_operation: {}
+                    });
+                }
+                return true;
+            } catch (error) {
+                console.error('❌ Error initializing workplace:', error);
+                return false;
+            }
+        };
 
         // Global functions
         window.openModal = function(modalId) {
@@ -572,6 +758,11 @@
             // Update tab content
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             document.getElementById(tabName + 'Tab').classList.add('active');
+            
+            // Load specific data for tab
+            if (tabName === 'hours') {
+                loadHours();
+            }
         };
 
         // Load workers function
@@ -580,7 +771,10 @@
             
             try {
                 document.getElementById('workersLoading').style.display = 'block';
-                document.getElementById('workersList').innerHTML = '';
+                document.getElementById('workersContainer').style.display = 'none';
+                
+                // Ensure workplace document exists
+                await window.initializeWorkplace(selectedWorkplace);
                 
                 console.log(`🔍 Loading workers from workplaces/${selectedWorkplace}/workers collection`);
                 
@@ -590,8 +784,26 @@
                 workers = [];
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
+                    
+                    const firstName = data['First Name'] || 'Unknown';
+                    const lastName = data['Last Name'] || 'Worker';
+                    const email = data['Email'] || 'no-email@example.com';
+                    const workStudy = data['Work Study'] || 'No';
+                    const availability = data['Days & Times Available'] || 'Not set';
+                    
+                    let availabilityObj = data.availability || {};
+                    if (Object.keys(availabilityObj).length === 0 && availability !== 'Not set') {
+                        availabilityObj = parseAvailabilityText(availability);
+                    }
+                    
                     workers.push({
                         id: doc.id,
+                        first_name: firstName,
+                        last_name: lastName,
+                        email: email,
+                        work_study: workStudy === 'Yes' || workStudy === true,
+                        availability_text: availability,
+                        availability: availabilityObj,
                         ...data
                     });
                 });
@@ -601,54 +813,91 @@
                 
             } catch (error) {
                 console.error('❌ Error loading workers:', error);
-                document.getElementById('workersLoading').innerHTML = `<p style="color: red;">Error loading workers: ${error.message}</p>`;
+                document.getElementById('workersLoading').innerHTML = '<p style="color: red;">Error loading workers: ' + error.message + '</p>';
             }
         }
 
-        // Display workers function
+        // Display workers
         function displayWorkers() {
-            document.getElementById('workersLoading').style.display = 'none';
-            
+            const tbody = document.getElementById('workersTableBody');
+            tbody.innerHTML = '';
+
             if (workers.length === 0) {
-                document.getElementById('workersList').innerHTML = `
-                    <div style="padding: 2rem; text-align: center; background: #f8f9fa; border-radius: 8px;">
-                        <p>No workers found. Add some workers to get started!</p>
-                    </div>
-                `;
-                return;
-            }
-
-            let html = `
-                <h5>Current Workers (${workers.length})</h5>
-                <div style="margin-top: 1rem;">
-            `;
-
-            workers.forEach(worker => {
-                const firstName = worker['First Name'] || worker.first_name || 'Unknown';
-                const lastName = worker['Last Name'] || worker.last_name || 'Worker';
-                const email = worker['Email'] || worker.email || 'no-email@example.com';
-                const workStudy = worker['Work Study'] || worker.work_study || 'No';
-                const availability = worker['Days & Times Available'] || worker.availability_text || 'Not set';
-
-                html += `
-                    <div style="padding: 1rem; margin-bottom: 1rem; border: 1px solid #dee2e6; border-radius: 8px; background: white;">
-                        <div style="display: flex; justify-content: space-between; align-items: start;">
-                            <div>
-                                <h6 style="margin: 0; font-size: 1.1rem;">${firstName} ${lastName}</h6>
-                                <p style="margin: 0.25rem 0; color: #6c757d;">${email}</p>
-                                <p style="margin: 0.25rem 0;"><strong>Work Study:</strong> ${workStudy}</p>
-                                <p style="margin: 0.25rem 0;"><strong>Availability:</strong> ${availability}</p>
-                            </div>
-                            <button onclick="deleteWorker('${worker.id}', '${firstName} ${lastName}')" style="background: #dc3545; color: white; border: none; padding: 0.5rem; border-radius: 4px; cursor: pointer;">
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: #6c757d;">No workers found. Add some workers to get started!</td></tr>';
+            } else {
+                workers.forEach((worker) => {
+                    const row = document.createElement('tr');
+                    
+                    const name = `${worker.first_name} ${worker.last_name}`;
+                    const email = worker.email;
+                    const workStudy = worker.work_study;
+                    const availability = worker.availability_text;
+                    
+                    row.innerHTML = `
+                        <td>${name}</td>
+                        <td>${email}</td>
+                        <td>
+                            <span class="status-badge ${(workStudy === 'Yes' || workStudy === true) ? 'status-admin' : 'status-user'}">
+                                ${workStudy === 'Yes' || workStudy === true ? 'Yes' : 'No'}
+                            </span>
+                        </td>
+                        <td style="max-width: 200px; word-wrap: break-word;">${availability}</td>
+                        <td>
+                            <button class="action-btn delete-btn" onclick="deleteWorker('${worker.id}', '${name}')">
                                 🗑️ Delete
                             </button>
-                        </div>
-                    </div>
-                `;
-            });
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
 
-            html += '</div>';
-            document.getElementById('workersList').innerHTML = html;
+            document.getElementById('workersLoading').style.display = 'none';
+            document.getElementById('workersContainer').style.display = 'block';
+        }
+
+        // Parse availability text into structured format
+        function parseAvailabilityText(availabilityText) {
+            const availability = {};
+            if (!availabilityText) return availability;
+
+            const blocks = availabilityText.split(',').map(s => s.trim());
+            
+            blocks.forEach(block => {
+                const match = block.match(/(\w+)\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})/i);
+                if (match) {
+                    const [, day, start, end] = match;
+                    
+                    let dayName = day.charAt(0).toUpperCase() + day.slice(1).toLowerCase();
+                    
+                    const dayMap = {
+                        'Mon': 'Monday',
+                        'Tue': 'Tuesday',
+                        'Wed': 'Wednesday',
+                        'Thu': 'Thursday',
+                        'Fri': 'Friday',
+                        'Sat': 'Saturday',
+                        'Sun': 'Sunday'
+                    };
+                    
+                    if (dayMap[dayName]) {
+                        dayName = dayMap[dayName];
+                    }
+                    
+                    if (!availability[dayName]) {
+                        availability[dayName] = [];
+                    }
+                    
+                    availability[dayName].push({
+                        start: start,
+                        end: end,
+                        start_hour: window.timeToHour(start),
+                        end_hour: window.timeToHour(end)
+                    });
+                }
+            });
+            
+            return availability;
         }
 
         // Add worker function
@@ -670,7 +919,11 @@
             }
 
             try {
+                await window.initializeWorkplace(selectedWorkplace);
+                
                 console.log(`➕ Adding worker to workplaces/${selectedWorkplace}/workers collection`);
+                
+                const availabilityObj = parseAvailabilityText(availability);
                 
                 const newWorker = {
                     'First Name': firstName,
@@ -678,6 +931,7 @@
                     'Email': email,
                     'Work Study': workStudy,
                     'Days & Times Available': availability,
+                    'availability': availabilityObj,
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()
                 };
@@ -703,17 +957,274 @@
         };
 
         // Delete worker function
-        window.deleteWorker = function(workerId, workerName) {
+        window.deleteWorker = async function(workerId, workerName) {
             if (confirm(`⚠️ Are you sure you want to delete "${workerName}"?\n\nThis action cannot be undone.`)) {
-                alert('Delete functionality will be implemented soon.');
-                // TODO: Implement delete functionality
+                try {
+                    console.log(`🗑️ Deleting worker ${workerId} from workplaces/${selectedWorkplace}/workers`);
+                    
+                    await deleteDoc(doc(workplaceDb, 'workplaces', selectedWorkplace, 'workers', workerId));
+                    alert(`✅ Worker "${workerName}" has been deleted successfully.`);
+                    loadWorkers();
+                } catch (error) {
+                    console.error('❌ Error deleting worker:', error);
+                    alert('❌ Error deleting worker: ' + error.message);
+                }
             }
         };
 
-        // Logout functionality
+        // Hours management
+        async function loadHours() {
+            if (!selectedWorkplace) return;
+            
+            try {
+                document.getElementById('hoursLoading').style.display = 'block';
+                
+                await window.initializeWorkplace(selectedWorkplace);
+                
+                console.log(`🔍 Loading hours for workplaces/${selectedWorkplace}`);
+                
+                const workplaceRef = doc(workplaceDb, 'workplaces', selectedWorkplace);
+                const workplaceDoc = await getDoc(workplaceRef);
+                
+                if (workplaceDoc.exists()) {
+                    const data = workplaceDoc.data();
+                    const hoursOfOperation = data.hours_of_operation || {};
+                    
+                    console.log('📄 Hours of operation:', hoursOfOperation);
+                    displayHours(hoursOfOperation);
+                } else {
+                    console.log('❌ Workplace document does not exist');
+                    displayHours({});
+                }
+                
+                document.getElementById('hoursLoading').style.display = 'none';
+            } catch (error) {
+                console.error('❌ Error loading hours:', error);
+                document.getElementById('hoursLoading').style.display = 'none';
+            }
+        }
+
+        function displayHours(hoursOfOperation) {
+            const container = document.getElementById('hoursSchedule');
+            
+            container.innerHTML = '';
+            
+            DAYS.forEach(day => {
+                const dayHours = hoursOfOperation[day] || [];
+                
+                const dayDiv = document.createElement('div');
+                dayDiv.style.cssText = 'display: grid; grid-template-columns: 120px 1fr 1fr 120px; gap: 1rem; align-items: center; padding: 1rem; border: 1px solid #eee; border-radius: 4px; margin-bottom: 0.5rem;';
+                
+                dayDiv.innerHTML = `
+                    <label><strong>${day}</strong></label>
+                    <input type="time" id="${day}_start" value="${dayHours[0]?.start || '09:00'}">
+                    <input type="time" id="${day}_end" value="${dayHours[0]?.end || '17:00'}">
+                    <label>
+                        <input type="checkbox" id="${day}_enabled" ${dayHours.length > 0 ? 'checked' : ''}>
+                        Open
+                    </label>
+                `;
+                
+                container.appendChild(dayDiv);
+            });
+
+            document.getElementById('hoursContent').innerHTML = generateHoursSummary(hoursOfOperation);
+        }
+
+        function generateHoursSummary(hoursOfOperation) {
+            if (Object.keys(hoursOfOperation).length === 0) {
+                return '<p>No hours of operation set.</p>';
+            }
+
+            let html = '<h5>Current Hours:</h5><ul>';
+            for (const [day, hours] of Object.entries(hoursOfOperation)) {
+                if (hours && hours.length > 0) {
+                    html += `<li><strong>${day}:</strong> ${window.formatTimeAMPM(hours[0].start)} - ${window.formatTimeAMPM(hours[0].end)}</li>`;
+                }
+            }
+            html += '</ul>';
+            return html;
+        }
+
+        window.saveHours = async function() {
+            if (!selectedWorkplace) {
+                alert('Please select a workplace first.');
+                return;
+            }
+
+            try {
+                await window.initializeWorkplace(selectedWorkplace);
+                
+                const hoursOfOperation = {};
+
+                DAYS.forEach(day => {
+                    const enabled = document.getElementById(`${day}_enabled`).checked;
+                    if (enabled) {
+                        const start = document.getElementById(`${day}_start`).value;
+                        const end = document.getElementById(`${day}_end`).value;
+                        
+                        hoursOfOperation[day] = [{
+                            start: start,
+                            end: end,
+                            start_hour: window.timeToHour(start),
+                            end_hour: window.timeToHour(end)
+                        }];
+                    }
+                });
+
+                console.log(`💾 Saving hours for ${selectedWorkplace}:`, hoursOfOperation);
+
+                const workplaceRef = doc(workplaceDb, 'workplaces', selectedWorkplace);
+                await updateDoc(workplaceRef, {
+                    hours_of_operation: hoursOfOperation,
+                    updated_at: new Date().toISOString()
+                });
+
+                alert('✅ Hours of operation saved successfully!');
+                displayHours(hoursOfOperation);
+            } catch (error) {
+                console.error('❌ Error saving hours:', error);
+                alert('❌ Error saving hours: ' + error.message);
+            }
+        };
+
+        // Schedule management placeholder functions
+        window.showGenerateScheduleForm = function() {
+            document.getElementById('generateScheduleForm').style.display = 'block';
+            document.getElementById('scheduleContent').innerHTML = '<p>Configure your schedule settings above.</p>';
+        };
+
+        window.hideGenerateScheduleForm = function() {
+            document.getElementById('generateScheduleForm').style.display = 'none';
+            document.getElementById('scheduleContent').innerHTML = '<p>Select an option above to get started.</p>';
+        };
+
+        window.generateSchedule = function() {
+            alert('Schedule generation feature will be implemented soon.');
+        };
+
+        window.viewCurrentSchedule = function() {
+            alert('View current schedule feature will be implemented soon.');
+        };
+
+        window.openShiftOverride = function() {
+            alert('Shift override feature will be implemented soon.');
+        };
+
+        window.viewScheduleHistory = function() {
+            alert('Schedule history feature will be implemented soon.');
+        };
+
+        // Last minute availability
+        window.isWorkerAvailableDuringHours = function(worker, day, startHour, endHour) {
+            const availability = worker.availability || {};
+            const dayAvailability = availability[day] || [];
+            
+            return dayAvailability.some(block => {
+                return block.start_hour <= startHour && endHour <= block.end_hour;
+            });
+        };
+
+        window.checkLastMinuteAvailability = function() {
+            if (!selectedWorkplace) {
+                alert('Please select a workplace first.');
+                return;
+            }
+            
+            const day = document.getElementById('lastMinuteDay').value;
+            const startTime = document.getElementById('lastMinuteStart').value;
+            const endTime = document.getElementById('lastMinuteEnd').value;
+            
+            if (!startTime || !endTime) {
+                alert('Please enter both start and end times.');
+                return;
+            }
+            
+            const startHour = window.timeToHour(startTime);
+            const endHour = window.timeToHour(endTime);
+            
+            if (endHour <= startHour) {
+                alert('End time must be after start time.');
+                return;
+            }
+            
+            document.getElementById('lastMinuteResults').style.display = 'block';
+            document.getElementById('availableWorkersList').innerHTML = '<div class="loading">Finding available workers...</div>';
+            
+            try {
+                const availableWorkers = workers.filter(worker => 
+                    window.isWorkerAvailableDuringHours(worker, day, startHour, endHour)
+                );
+                
+                document.getElementById('availableWorkersCount').innerHTML = `
+                    <strong>${availableWorkers.length}</strong> workers available on <strong>${day}</strong> 
+                    from <strong>${window.formatTimeAMPM(startTime)}</strong> to <strong>${window.formatTimeAMPM(endTime)}</strong>.
+                `;
+                
+                if (availableWorkers.length === 0) {
+                    document.getElementById('availableWorkersList').innerHTML = `
+                        <p style="padding: 1rem; color: #dc3545;">No workers available during this time slot.</p>
+                    `;
+                } else {
+                    let html = '';
+                    
+                    availableWorkers.sort((a, b) => {
+                        if (a.work_study && !b.work_study) return -1;
+                        if (!a.work_study && b.work_study) return 1;
+                        return 0;
+                    });
+                    
+                    availableWorkers.forEach(worker => {
+                        html += `
+                            <div style="padding: 0.75rem; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong>${worker.first_name} ${worker.last_name}</strong> 
+                                    ${worker.work_study ? '<span style="color: #28a745;">(Work Study)</span>' : ''}
+                                </div>
+                                <button onclick="contactWorker('${worker.email}', '${day}', '${startTime}', '${endTime}')" style="padding: 0.25rem 0.75rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                    📧 Contact
+                                </button>
+                            </div>
+                        `;
+                    });
+                    
+                    document.getElementById('availableWorkersList').innerHTML = html;
+                }
+            } catch (error) {
+                console.error('❌ Error checking availability:', error);
+                document.getElementById('availableWorkersList').innerHTML = `
+                    <p style="padding: 1rem; color: #dc3545;">Error checking availability: ${error.message}</p>
+                `;
+            }
+        };
+
+        window.contactWorker = function(email, day, startTime, endTime) {
+            const subject = `Urgent Shift Coverage: ${day} ${window.formatTimeAMPM(startTime)}-${window.formatTimeAMPM(endTime)}`;
+            const body = `Hello,
+
+We need coverage for a shift on ${day} from ${window.formatTimeAMPM(startTime)} to ${window.formatTimeAMPM(endTime)}.
+
+Please let me know if you are available.
+
+Thank you,
+${selectedWorkplace.replace('_', ' ').toUpperCase()} Management`;
+
+            const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.open(mailtoLink);
+        };
+
+        // Event listeners
         document.getElementById('logout').addEventListener('click', function() {
             localStorage.removeItem('user');
             window.location.href = 'index.html';
+        });
+
+        document.getElementById('saveHoursBtn').addEventListener('click', function() {
+            window.saveHours();
+        });
+
+        document.getElementById('checkAvailabilityBtn').addEventListener('click', function() {
+            window.checkLastMinuteAvailability();
         });
 
         // Close modal when clicking outside
