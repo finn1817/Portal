@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Load workers with enhanced scheduling data
 window.loadWorkers = async function(workplace) {
+    console.log('[loadWorkers] Called for workplace:', workplace);
     try {
         document.getElementById('workersLoading').style.display = 'block';
         document.getElementById('workersContainer').style.display = 'none';
@@ -108,6 +109,7 @@ function validateWorkStudyAvailability() {
 
 // Enhanced display workers with availability insights
 function displayWorkers(workersData) {
+    console.log('[displayWorkers] Rendering', workersData.length, 'workers');
     const tbody = document.getElementById('workersTableBody');
     tbody.innerHTML = '';
 

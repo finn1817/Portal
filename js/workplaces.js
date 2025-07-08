@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Select workplace
 window.selectWorkplace = async function(workplace) {
+    console.log('[selectWorkplace] Called with:', workplace);
     window.selectedWorkplace = workplace;
     
     // Update visual selection
@@ -58,6 +59,7 @@ window.selectWorkplace = async function(workplace) {
     window.draftSchedule = null;
     
     // Load workplace data
+    console.log('[selectWorkplace] Loading workplace data for:', workplace);
     loadWorkplaceData(workplace);
 };
 
@@ -88,6 +90,7 @@ async function initializeWorkplace(workplace) {
 
 // Load workplace data from Firebase
 async function loadWorkplaceData(workplace) {
+    console.log('[loadWorkplaceData] Called for:', workplace);
     try {
         console.log(`🔍 Loading data for ${workplace} from workplaces collection`);
         
@@ -100,12 +103,13 @@ async function loadWorkplaceData(workplace) {
         
         if (workplaceDoc.exists()) {
             window.currentWorkplaceData = workplaceDoc.data();
+            console.log('[loadWorkplaceData] Loaded data:', window.currentWorkplaceData);
         }
         
         // Load workers for the workplace
         window.loadWorkers(workplace);
     } catch (error) {
-        console.error('❌ Error loading workplace data:', error);
+        console.error('[loadWorkplaceData] Error:', error);
     }
 }
 
@@ -113,15 +117,15 @@ async function loadWorkplaceData(workplace) {
 async function loadAndRenderWorkplaces() {
     const grid = document.getElementById('workplaceGrid');
     if (!grid) {
-        console.error('❌ #workplaceGrid not found in DOM');
+        console.error('[loadAndRenderWorkplaces] #workplaceGrid not found in DOM');
         return;
     }
     grid.innerHTML = '<div class="loading">Loading workplaces...</div>';
     try {
-        console.log('🔍 Querying workplaces collection...');
+        console.log('[loadAndRenderWorkplaces] Querying workplaces collection...');
         const workplacesQuery = collection(workplaceDb, 'workplaces');
         const querySnapshot = await getDocs(workplacesQuery);
-        console.log(`✅ Found ${querySnapshot.size} workplaces`);
+        console.log(`[loadAndRenderWorkplaces] Found ${querySnapshot.size} workplaces`);
         if (querySnapshot.empty) {
             grid.innerHTML = '<div class="loading">No workplaces found. Please add workplaces in Firestore.</div>';
             return;
@@ -143,11 +147,13 @@ async function loadAndRenderWorkplaces() {
         document.querySelectorAll('.workplace-card').forEach(card => {
             card.addEventListener('click', function() {
                 const workplace = this.getAttribute('data-workplace');
+                console.log('[workplace-card click] Selected:', workplace);
                 selectWorkplace(workplace);
             });
         });
+        console.log('[loadAndRenderWorkplaces] Click listeners attached to workplace cards');
     } catch (error) {
-        console.error('❌ Error loading workplaces:', error);
+        console.error('[loadAndRenderWorkplaces] Error:', error);
         grid.innerHTML = `<div class="loading" style="color: #dc3545;">Error loading workplaces: ${error.message}</div>`;
     }
 }
