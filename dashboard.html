@@ -642,6 +642,25 @@
                     </div>
                 </div>
 
+                <!-- Add missing containers for JS compatibility -->
+                <div id="workersLoading" class="loading" style="display:none;">Loading workers...</div>
+                <div id="workersContainer" style="display:none;">
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Work Study</th>
+                                <th>Availability</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="workersTableBody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
                 <div id="workersContent">
                     <div class="loading">Select a workplace to view workers.</div>
                 </div>
@@ -652,6 +671,10 @@
                 <h2>🕒 Hours of Operation</h2>
                 <p>Set operating hours for each day of the week.</p>
                 
+                <!-- Add missing container for JS compatibility -->
+                <div id="hoursLoading" class="loading" style="display:none;">Loading hours...</div>
+                <div id="hoursSchedule"></div>
+
                 <div id="hoursContent">
                     <div class="loading">Select a workplace to manage hours.</div>
                 </div>
