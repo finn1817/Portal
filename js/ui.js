@@ -113,12 +113,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Open modal
 window.openModal = function(modalId) {
-    document.getElementById(modalId).style.display = 'block';
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'block';
+    }
 };
 
 // Close modal
 window.closeModal = function(modalId) {
-    document.getElementById(modalId).style.display = 'none';
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+    }
 };
 
 // Switch tab
@@ -127,27 +133,45 @@ window.switchTab = function(tabName) {
     document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
     const tabBtn = document.querySelector(`.tab[data-tab="${tabName}"]`);
     if (tabBtn) tabBtn.classList.add('active');
+    
     // Update tab content
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-    // Patch: Only add 'active' if the tab content exists
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+    
+    // Show the selected tab content
     const tabContent = document.getElementById(tabName + '-tab');
     if (tabContent) {
         tabContent.classList.add('active');
+        tabContent.classList.remove('hidden');
     } else {
         console.warn(`Tab content for '${tabName}' not found (id: ${tabName}-tab)`);
     }
+    
     // Load specific data for tab
     if (tabName === 'hours') {
         window.loadHours(window.selectedWorkplace);
+    } else if (tabName === 'workers') {
+        window.loadWorkers(window.selectedWorkplace);
     }
 };
 
 // Update analytics data
 window.updateAnalytics = function() {
-    const totalUsers = document.getElementById('totalUsers').textContent || '0';
-    document.getElementById('analyticsUsers').textContent = totalUsers;
-    document.getElementById('analyticsLogins').textContent = Math.floor(Math.random() * 50) + 10;
-    document.getElementById('analyticsNewUsers').textContent = Math.floor(Math.random() * 10) + 1;
+    const totalUsers = document.getElementById('totalUsers')?.textContent || '0';
+    const analyticsUsers = document.getElementById('analyticsUsers');
+    if (analyticsUsers) {
+        analyticsUsers.textContent = totalUsers;
+    }
+    
+    const analyticsLogins = document.getElementById('analyticsLogins');
+    if (analyticsLogins) {
+        analyticsLogins.textContent = Math.floor(Math.random() * 50) + 10;
+    }
+    
+    const analyticsNewUsers = document.getElementById('analyticsNewUsers');
+    if (analyticsNewUsers) {
+        analyticsNewUsers.textContent = Math.floor(Math.random() * 10) + 1;
+    }
 };
 
 // Helper function for displaying nice times
@@ -165,6 +189,7 @@ window.formatTimeAMPM = function(timeStr) {
 
 // Time conversion functions
 window.timeToHour = function(timeStr) {
+    if (!timeStr) return 0;
     const [hours, minutes] = timeStr.split(':').map(Number);
     let hourNum = hours + (minutes / 60);
     

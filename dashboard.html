@@ -234,66 +234,6 @@
             background: #f8f9fa;
         }
 
-        .availability-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        .day-availability {
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 8px;
-            border: 1px solid #dee2e6;
-        }
-
-        .day-availability h4 {
-            margin-bottom: 1rem;
-            color: #333;
-            font-size: 0.9rem;
-        }
-
-        .time-slot {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .time-slot input {
-            width: 70px;
-            padding: 0.25rem;
-            border: 1px solid #ced4da;
-            border-radius: 3px;
-            font-size: 0.8rem;
-        }
-
-        .alert {
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border: 1px solid transparent;
-            border-radius: 5px;
-        }
-
-        .alert-success {
-            color: #155724;
-            background-color: #d4edda;
-            border-color: #c3e6cb;
-        }
-
-        .alert-danger {
-            color: #721c24;
-            background-color: #f8d7da;
-            border-color: #f5c6cb;
-        }
-
-        .alert-warning {
-            color: #856404;
-            background-color: #fff3cd;
-            border-color: #ffeaa7;
-        }
-
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -452,94 +392,31 @@
             margin-bottom: 0.25rem;
         }
 
-        .schedule-list-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-            border-bottom: 1px solid #dee2e6;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        .schedule-list-item:hover {
-            background: #f8f9fa;
-        }
-
-        .schedule-list-item.current {
-            background: #d4edda;
-            border-left: 4px solid #28a745;
-        }
-
-        .schedule-date {
-            font-weight: bold;
-            color: #333;
-        }
-
-        .schedule-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .history-btn {
-            padding: 0.5rem 1rem;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .history-btn:hover {
-            background: #0056b3;
-        }
-
-        .override-shift-row {
-            display: flex;
-            gap: 1rem;
-            padding: 1rem;
-            border-bottom: 1px solid #dee2e6;
-            align-items: flex-start;
-        }
-
-        .override-worker-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .override-worker-item {
-            padding: 0.25rem 0.75rem;
-            background: #e9ecef;
-            border: 1px solid #ced4da;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-
-        .override-worker-item:hover {
-            background: #007bff;
-            color: white;
-        }
-
-        .override-worker-item.selected {
-            background: #28a745;
-            color: white;
-            border-color: #28a745;
-        }
-
-        .print-options {
-            margin-top: 2rem;
-            padding: 1.5rem;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-
         .hidden {
             display: none !important;
+        }
+
+        .last-minute-results {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .hours-schedule {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .day-schedule {
+            display: grid;
+            grid-template-columns: 120px 1fr 1fr 120px;
+            gap: 1rem;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            background: white;
         }
 
         @media (max-width: 768px) {
@@ -564,15 +441,15 @@
                 grid-template-columns: 1fr;
             }
 
-            .availability-grid {
-                grid-template-columns: 1fr;
-            }
-
             .stats {
                 grid-template-columns: repeat(2, 1fr);
             }
 
             .schedule-options {
+                grid-template-columns: 1fr;
+            }
+
+            .day-schedule {
                 grid-template-columns: 1fr;
             }
         }
@@ -608,6 +485,7 @@
                 <button class="tab active" data-tab="workers">👥 Workers</button>
                 <button class="tab" data-tab="hours">🕒 Hours</button>
                 <button class="tab" data-tab="schedule">📅 Schedule</button>
+                <button class="tab" data-tab="last-minute">🚨 Last Minute</button>
                 <button class="tab" data-tab="reports">📊 Reports</button>
                 <button class="tab" data-tab="settings">⚙️ Settings</button>
             </nav>
@@ -619,7 +497,7 @@
                     <p>Manage your team members and their availability.</p>
                     
                     <div class="form-group">
-                        <button class="btn btn-success" onclick="showAddWorkerForm()">➕ Add New Worker</button>
+                        <button class="btn btn-success" id="addWorkerBtn">➕ Add New Worker</button>
                     </div>
 
                     <div id="addWorkerForm" class="form-group hidden">
@@ -685,6 +563,9 @@
                     <!-- Add missing container for JS compatibility -->
                     <div id="hoursLoading" class="loading" style="display:none;">Loading hours...</div>
                     <div id="hoursSchedule"></div>
+                    <div style="margin-top: 1rem;">
+                        <button class="btn btn-success" id="saveHoursBtn">💾 Save Hours</button>
+                    </div>
 
                     <div id="hoursContent">
                         <div class="loading">Select a workplace to manage hours.</div>
@@ -766,6 +647,42 @@
                     </div>
                 </div>
 
+                <!-- Last Minute Tab -->
+                <div id="last-minute-tab" class="tab-content hidden">
+                    <h2>🚨 Last Minute Availability</h2>
+                    <p>Check who's available for urgent shift coverage.</p>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="lastMinuteDay">Day</label>
+                            <select id="lastMinuteDay" class="form-control">
+                                <option value="Monday">Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                                <option value="Saturday">Saturday</option>
+                                <option value="Sunday">Sunday</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastMinuteStart">Start Time</label>
+                            <input type="time" id="lastMinuteStart" class="form-control" value="09:00">
+                        </div>
+                        <div class="form-group">
+                            <label for="lastMinuteEnd">End Time</label>
+                            <input type="time" id="lastMinuteEnd" class="form-control" value="17:00">
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-success" id="checkAvailabilityBtn">🔍 Check Availability</button>
+                    
+                    <div id="lastMinuteResults" class="last-minute-results" style="display: none;">
+                        <div id="availableWorkersCount"></div>
+                        <div id="availableWorkersList"></div>
+                    </div>
+                </div>
+
                 <!-- Reports Tab -->
                 <div id="reports-tab" class="tab-content hidden">
                     <h2>📊 Reports & Analytics</h2>
@@ -815,12 +732,59 @@
         </div>
     </div>
 
+    <!-- Helper functions -->
+    <script>
+        // Global utility functions
+        window.showAddWorkerForm = function() {
+            document.getElementById('addWorkerForm').classList.remove('hidden');
+        };
+
+        window.hideAddWorkerForm = function() {
+            document.getElementById('addWorkerForm').classList.add('hidden');
+            // Clear form
+            document.getElementById('workerFirstName').value = '';
+            document.getElementById('workerLastName').value = '';
+            document.getElementById('workerEmail').value = '';
+            document.getElementById('workerWorkStudy').value = 'No';
+            document.getElementById('workerAvailability').value = '';
+        };
+
+        window.saveSettings = function() {
+            alert('Settings saved successfully!');
+        };
+
+        // Time utility functions
+        window.timeToHour = function(timeStr) {
+            if (!timeStr) return 0;
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours + (minutes / 60);
+        };
+
+        window.hourToTimeStr = function(hour) {
+            const h = Math.floor(hour);
+            const m = Math.round((hour - h) * 60);
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+        };
+
+        window.formatTimeAMPM = function(timeStr) {
+            if (!timeStr) return '';
+            
+            let [hours, minutes] = timeStr.split(':').map(Number);
+            const period = hours >= 12 ? 'PM' : 'AM';
+            
+            hours = hours % 12;
+            hours = hours ? hours : 12; // Convert 0 to 12 for 12 AM
+            
+            return `${hours}:${minutes.toString().padStart(2, '0')} ${period}`;
+        };
+    </script>
+
     <!-- Initialize the app -->
-    <!--<script type="module" src="js/firebase-config.js"></script> -->
     <script type="module" src="js/workplaces.js"></script>
     <script type="module" src="js/workers.js"></script>
     <script type="module" src="js/hours.js"></script>
     <script type="module" src="js/schedule.js"></script>
+    <script type="module" src="js/availability.js"></script>
     <script type="module" src="js/ui.js"></script>
     <script type="module" src="js/users.js"></script>
 </body>

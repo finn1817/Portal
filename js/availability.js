@@ -413,6 +413,26 @@ window.viewWorkerSchedule = function(email) {
     alert(`Worker schedule view for ${email} will be implemented in a future update.\n\nThis feature will show:\n• Current week schedule\n• Total hours assigned\n• Available time slots\n• Recent shift history`);
 };
 
+// Helper function to get worker assigned hours (if schedule functions are available)
+window.getWorkerAssignedHours = function(worker, schedule) {
+    if (!schedule || !worker.email) return 0;
+    
+    let totalHours = 0;
+    const workerEmail = worker.email;
+    
+    for (const [day, shifts] of Object.entries(schedule)) {
+        for (const shift of shifts) {
+            if (shift.raw_assigned && shift.raw_assigned.includes(workerEmail)) {
+                const startHour = window.timeToHour(shift.start);
+                const endHour = window.timeToHour(shift.end);
+                totalHours += (endHour - startHour);
+            }
+        }
+    }
+    
+    return totalHours;
+};
+
 // Export enhanced functions
 export { 
     checkLastMinuteAvailability,

@@ -5,12 +5,36 @@ import { workplaceDb } from './firebase-config.js';
 // Global workers array
 window.workers = [];
 
+// Time utility functions (ensure they're available)
+window.timeToHour = window.timeToHour || function(timeStr) {
+    if (!timeStr) return 0;
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    let hourNum = hours + (minutes / 60);
+    
+    // Handle midnight (00:00) as 24 hours for end times
+    if (hours === 0 && minutes === 0) hourNum = 24; 
+    
+    return hourNum;
+};
+
+window.formatTimeAMPM = window.formatTimeAMPM || function(timeStr) {
+    if (!timeStr) return '';
+    
+    let [hours, minutes] = timeStr.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    
+    hours = hours % 12;
+    hours = hours ? hours : 12; // Convert 0 to 12 for 12 AM
+    
+    return `${hours}:${minutes.toString().padStart(2, '0')} ${period}`;
+};
+
 // Add event listeners for worker management
 document.addEventListener('DOMContentLoaded', function() {
     const addWorkerBtn = document.getElementById('addWorkerBtn');
     if (addWorkerBtn) {
         addWorkerBtn.addEventListener('click', function() {
-            addWorker();
+            window.showAddWorkerForm();
         });
     }
 });
@@ -19,8 +43,13 @@ document.addEventListener('DOMContentLoaded', function() {
 window.loadWorkers = async function(workplace) {
     console.log('[loadWorkers] Called for workplace:', workplace);
     try {
-        document.getElementById('workersLoading').style.display = 'block';
-        document.getElementById('workersContainer').style.display = 'none';
+        const workersLoading = document.getElementById('workersLoading');
+        const workersContainer = document.getElementById('workersContainer');
+        const workersContent = document.getElementById('workersContent');
+        
+        if (workersLoading) workersLoading.style.display = 'block';
+        if (workersContainer) workersContainer.style.display = 'none';
+        if (workersContent) workersContent.style.display = 'none';
         
         // Ensure workplace document exists
         await window.initializeWorkplace(workplace);
@@ -75,7 +104,10 @@ window.loadWorkers = async function(workplace) {
         
     } catch (error) {
         console.error('❌ Error loading workers:', error);
-        document.getElementById('workersLoading').textContent = 'Error loading workers: ' + error.message;
+        const workersLoading = document.getElementById('workersLoading');
+        if (workersLoading) {
+            workersLoading.textContent = 'Error loading workers: ' + error.message;
+        }
     }
 };
 
@@ -111,12 +143,20 @@ function validateWorkStudyAvailability() {
 function displayWorkers(workersData) {
     console.log('[displayWorkers] Rendering', workersData.length, 'workers');
     const tbody = document.getElementById('workersTableBody');
+    const workersContainer = document.getElementById('workersContainer');
+    const workersLoading = document.getElementById('workersLoading');
+    
+    if (!tbody) {
+        console.error('workersTableBody not found');
+        return;
+    }
+    
     tbody.innerHTML = '';
 
     if (workersData.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: #6c757d;">No workers found. Add some workers to get started!</td></tr>';
     } else {
-        workersData.forEach((worker) => {
+        workersData.forEach((worker, index) => {
             const row = document.createElement('tr');
             
             // Use the cleaned field names
@@ -137,8 +177,8 @@ function displayWorkers(workersData) {
                 <td ${rowClass}>${name} ${workStudy && worker.total_availability_hours < 5 ? '<small style="color: #dc3545;">(⚠️ Low Avail.)</small>' : ''}</td>
                 <td>${email}</td>
                 <td>
-                    <span class="status-badge ${(workStudy === 'Yes' || workStudy === true) ? 'status-admin' : 'status-user'}">
-                        ${workStudy === 'Yes' || workStudy === true ? 'Yes' : 'No'}
+                    <span class="status-badge ${workStudy ? 'status-admin' : 'status-user'}">
+                        ${workStudy ? 'Yes' : 'No'}
                     </span>
                 </td>
                 <td style="max-width: 200px; word-wrap: break-word;">
@@ -146,7 +186,10 @@ function displayWorkers(workersData) {
                     ${worker.total_availability_hours ? `<br><small style="color: #6c757d;">(${worker.total_availability_hours.toFixed(1)} hrs/week)</small>` : ''}
                 </td>
                 <td>
-                    <button class="action-btn delete-btn" onclick="deleteWorker('${worker.id}', '${name}')">
+                    <button class="btn btn-secondary" onclick="editWorker('${worker.email}', '${worker.id}')" style="margin-right: 5px; padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+                        ✏️ Edit
+                    </button>
+                    <button class="btn btn-danger" onclick="deleteWorker('${worker.email}', '${worker.id}')" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
                         🗑️ Delete
                     </button>
                 </td>
@@ -155,8 +198,8 @@ function displayWorkers(workersData) {
         });
     }
 
-    document.getElementById('workersLoading').style.display = 'none';
-    document.getElementById('workersContainer').style.display = 'block';
+    if (workersLoading) workersLoading.style.display = 'none';
+    if (workersContainer) workersContainer.style.display = 'block';
 }
 
 // Enhanced worker addition with availability validation
@@ -235,6 +278,9 @@ window.addWorker = async function() {
         document.getElementById('workerWorkStudy').value = 'No';
         document.getElementById('workerAvailability').value = '';
         
+        // Hide form
+        window.hideAddWorkerForm();
+        
         // Reload workers
         window.loadWorkers(window.selectedWorkplace);
     } catch (error) {
@@ -243,8 +289,16 @@ window.addWorker = async function() {
     }
 };
 
+// Edit worker function
+window.editWorker = function(email, workerId) {
+    alert(`Edit functionality for ${email} (ID: ${workerId}) will be implemented in a future update.`);
+};
+
 // Delete a worker with confirmation
-window.deleteWorker = async function(workerId, workerName) {
+window.deleteWorker = async function(email, workerId) {
+    const worker = window.workers.find(w => w.email === email);
+    const workerName = worker ? `${worker.first_name} ${worker.last_name}` : email;
+    
     if (confirm(`⚠️ Are you sure you want to delete "${workerName}"?\n\nThis action cannot be undone.`)) {
         try {
             console.log(`🗑️ Deleting worker ${workerId} from workplaces/${window.selectedWorkplace}/workers`);

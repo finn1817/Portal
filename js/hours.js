@@ -2,6 +2,30 @@
 import { doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { workplaceDb, DAYS } from './firebase-config.js';
 
+// Time utility functions
+window.timeToHour = window.timeToHour || function(timeStr) {
+    if (!timeStr) return 0;
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    let hourNum = hours + (minutes / 60);
+    
+    // Handle midnight (00:00) as 24 hours for end times
+    if (hours === 0 && minutes === 0) hourNum = 24; 
+    
+    return hourNum;
+};
+
+window.formatTimeAMPM = window.formatTimeAMPM || function(timeStr) {
+    if (!timeStr) return '';
+    
+    let [hours, minutes] = timeStr.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    
+    hours = hours % 12;
+    hours = hours ? hours : 12; // Convert 0 to 12 for 12 AM
+    
+    return `${hours}:${minutes.toString().padStart(2, '0')} ${period}`;
+};
+
 // Add event listeners
 document.addEventListener('DOMContentLoaded', function() {
     const saveHoursBtn = document.getElementById('saveHoursBtn');
@@ -14,8 +38,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Load hours of operation with validation
 window.loadHours = async function(workplace) {
+    if (!workplace) return;
+    
     try {
-        document.getElementById('hoursLoading').style.display = 'block';
+        const hoursLoading = document.getElementById('hoursLoading');
+        if (hoursLoading) {
+            hoursLoading.style.display = 'block';
+        }
         
         // Ensure workplace document exists
         await window.initializeWorkplace(workplace);
@@ -40,10 +69,15 @@ window.loadHours = async function(workplace) {
             displayHours({});
         }
         
-        document.getElementById('hoursLoading').style.display = 'none';
+        if (hoursLoading) {
+            hoursLoading.style.display = 'none';
+        }
     } catch (error) {
         console.error('❌ Error loading hours:', error);
-        document.getElementById('hoursLoading').style.display = 'none';
+        const hoursLoading = document.getElementById('hoursLoading');
+        if (hoursLoading) {
+            hoursLoading.style.display = 'none';
+        }
     }
 };
 
@@ -63,7 +97,7 @@ function validateHoursForScheduling(hoursOfOperation) {
     // Check for scheduling conflicts (very short operating periods)
     for (const [day, hours] of Object.entries(hoursOfOperation)) {
         for (const period of hours) {
-            const duration = period.end_hour - period.start_hour;
+            const duration = (period.end_hour || window.timeToHour(period.end)) - (period.start_hour || window.timeToHour(period.start));
             if (duration < 2) {
                 console.warn(`⚠️ Short operating period on ${day}: ${duration} hours`);
             }
@@ -76,7 +110,9 @@ function calculateTotalOperatingHours(hoursOfOperation) {
     let total = 0;
     for (const dayHours of Object.values(hoursOfOperation)) {
         for (const period of dayHours) {
-            total += period.end_hour - period.start_hour;
+            const startHour = period.start_hour || window.timeToHour(period.start);
+            const endHour = period.end_hour || window.timeToHour(period.end);
+            total += endHour - startHour;
         }
     }
     return total;
@@ -85,6 +121,10 @@ function calculateTotalOperatingHours(hoursOfOperation) {
 // Enhanced display hours in editable form with validation
 function displayHours(hoursOfOperation) {
     const container = document.getElementById('hoursSchedule');
+    if (!container) {
+        console.error('hoursSchedule container not found');
+        return;
+    }
     
     container.innerHTML = '';
     
@@ -130,7 +170,10 @@ function displayHours(hoursOfOperation) {
     });
 
     // Display current hours summary with analytics
-    document.getElementById('hoursContent').innerHTML = generateEnhancedHoursSummary(hoursOfOperation);
+    const hoursContent = document.getElementById('hoursContent');
+    if (hoursContent) {
+        hoursContent.innerHTML = generateEnhancedHoursSummary(hoursOfOperation);
+    }
 }
 
 // Toggle day enabled/disabled state
@@ -149,22 +192,26 @@ function updateDayInputsState(day, enabled) {
     const startInput = document.getElementById(`${day}_start`);
     const endInput = document.getElementById(`${day}_end`);
     
-    startInput.disabled = !enabled;
-    endInput.disabled = !enabled;
-    
-    // Update visual styling
-    const opacity = enabled ? '1' : '0.5';
-    startInput.style.opacity = opacity;
-    endInput.style.opacity = opacity;
+    if (startInput && endInput) {
+        startInput.disabled = !enabled;
+        endInput.disabled = !enabled;
+        
+        // Update visual styling
+        const opacity = enabled ? '1' : '0.5';
+        startInput.style.opacity = opacity;
+        endInput.style.opacity = opacity;
+    }
 }
 
 // Validate hour input for a specific day
 window.validateHourInput = function(day) {
-    const enabled = document.getElementById(`${day}_enabled`).checked;
+    const enabled = document.getElementById(`${day}_enabled`)?.checked;
     if (!enabled) return;
     
-    const startTime = document.getElementById(`${day}_start`).value;
-    const endTime = document.getElementById(`${day}_end`).value;
+    const startTime = document.getElementById(`${day}_start`)?.value;
+    const endTime = document.getElementById(`${day}_end`)?.value;
+    
+    if (!startTime || !endTime) return;
     
     const startHour = window.timeToHour(startTime);
     const endHour = window.timeToHour(endTime);
@@ -173,31 +220,33 @@ window.validateHourInput = function(day) {
     const endInput = document.getElementById(`${day}_end`);
     
     // Reset styles
-    startInput.style.borderColor = '#ddd';
-    endInput.style.borderColor = '#ddd';
-    
-    // Validate time range
-    if (endHour <= startHour) {
-        endInput.style.borderColor = '#dc3545';
-        endInput.title = 'End time must be after start time';
-        return false;
-    }
-    
-    // Check for reasonable operating hours
-    const duration = endHour - startHour;
-    if (duration > 16) {
-        startInput.style.borderColor = '#ffc107';
-        endInput.style.borderColor = '#ffc107';
-        startInput.title = 'Very long operating day (>16 hours)';
-        endInput.title = 'Very long operating day (>16 hours)';
-    } else if (duration < 2) {
-        startInput.style.borderColor = '#ffc107';
-        endInput.style.borderColor = '#ffc107';
-        startInput.title = 'Very short operating day (<2 hours)';
-        endInput.title = 'Very short operating day (<2 hours)';
-    } else {
-        startInput.title = '';
-        endInput.title = '';
+    if (startInput && endInput) {
+        startInput.style.borderColor = '#ddd';
+        endInput.style.borderColor = '#ddd';
+        
+        // Validate time range
+        if (endHour <= startHour) {
+            endInput.style.borderColor = '#dc3545';
+            endInput.title = 'End time must be after start time';
+            return false;
+        }
+        
+        // Check for reasonable operating hours
+        const duration = endHour - startHour;
+        if (duration > 16) {
+            startInput.style.borderColor = '#ffc107';
+            endInput.style.borderColor = '#ffc107';
+            startInput.title = 'Very long operating day (>16 hours)';
+            endInput.title = 'Very long operating day (>16 hours)';
+        } else if (duration < 2) {
+            startInput.style.borderColor = '#ffc107';
+            endInput.style.borderColor = '#ffc107';
+            startInput.title = 'Very short operating day (<2 hours)';
+            endInput.title = 'Very short operating day (<2 hours)';
+        } else {
+            startInput.title = '';
+            endInput.title = '';
+        }
     }
     
     return true;
@@ -244,7 +293,9 @@ function generateEnhancedHoursSummary(hoursOfOperation) {
     for (const [day, hours] of Object.entries(hoursOfOperation)) {
         if (hours && hours.length > 0) {
             const period = hours[0];
-            const duration = period.end_hour - period.start_hour;
+            const startHour = period.start_hour || window.timeToHour(period.start);
+            const endHour = period.end_hour || window.timeToHour(period.end);
+            const duration = endHour - startHour;
             
             html += `
                 <div style="padding: 0.75rem; border-bottom: 1px solid #dee2e6; display: flex; justify-content: space-between; align-items: center;">
@@ -284,7 +335,10 @@ window.saveHours = async function() {
 
     // Validate all enabled days first
     let hasErrors = false;
-    const enabledDays = DAYS.filter(day => document.getElementById(`${day}_enabled`).checked);
+    const enabledDays = DAYS.filter(day => {
+        const checkbox = document.getElementById(`${day}_enabled`);
+        return checkbox && checkbox.checked;
+    });
     
     for (const day of enabledDays) {
         if (!validateHourInput(day)) {
@@ -309,17 +363,24 @@ window.saveHours = async function() {
         const hoursOfOperation = {};
 
         DAYS.forEach(day => {
-            const enabled = document.getElementById(`${day}_enabled`).checked;
+            const checkbox = document.getElementById(`${day}_enabled`);
+            const enabled = checkbox && checkbox.checked;
+            
             if (enabled) {
-                const start = document.getElementById(`${day}_start`).value;
-                const end = document.getElementById(`${day}_end`).value;
+                const startInput = document.getElementById(`${day}_start`);
+                const endInput = document.getElementById(`${day}_end`);
                 
-                hoursOfOperation[day] = [{
-                    start: start,
-                    end: end,
-                    start_hour: window.timeToHour(start),
-                    end_hour: window.timeToHour(end)
-                }];
+                if (startInput && endInput) {
+                    const start = startInput.value;
+                    const end = endInput.value;
+                    
+                    hoursOfOperation[day] = [{
+                        start: start,
+                        end: end,
+                        start_hour: window.timeToHour(start),
+                        end_hour: window.timeToHour(end)
+                    }];
+                }
             }
         });
 
@@ -387,10 +448,13 @@ window.validateHoursForScheduling = function(hoursOfOperation, workers = []) {
         
         for (const [day, dayHours] of Object.entries(hoursOfOperation)) {
             for (const period of dayHours) {
+                const periodStart = period.start_hour || window.timeToHour(period.start);
+                const periodEnd = period.end_hour || window.timeToHour(period.end);
+                
                 if (worker.availability && worker.availability[day]) {
                     for (const avail of worker.availability[day]) {
-                        const overlapStart = Math.max(period.start_hour, avail.start_hour);
-                        const overlapEnd = Math.min(period.end_hour, avail.end_hour);
+                        const overlapStart = Math.max(periodStart, avail.start_hour);
+                        const overlapEnd = Math.min(periodEnd, avail.end_hour);
                         if (overlapEnd > overlapStart) {
                             maxPossibleHours += (overlapEnd - overlapStart);
                         }

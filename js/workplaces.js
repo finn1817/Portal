@@ -6,6 +6,36 @@ import { workplaceDb } from './firebase-config.js';
 window.selectedWorkplace = null;
 window.currentWorkplaceData = null;
 
+// Time utility functions
+window.timeToHour = function(timeStr) {
+    if (!timeStr) return 0;
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    let hourNum = hours + (minutes / 60);
+    
+    // Handle midnight (00:00) as 24 hours for end times
+    if (hours === 0 && minutes === 0) hourNum = 24; 
+    
+    return hourNum;
+};
+
+window.hourToTimeStr = function(hour) {
+    const h = Math.floor(hour);
+    const m = Math.round((hour - h) * 60);
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+};
+
+window.formatTimeAMPM = function(timeStr) {
+    if (!timeStr) return '';
+    
+    let [hours, minutes] = timeStr.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    
+    hours = hours % 12;
+    hours = hours ? hours : 12; // Convert 0 to 12 for 12 AM
+    
+    return `${hours}:${minutes.toString().padStart(2, '0')} ${period}`;
+};
+
 // Initialize workplace listeners
 document.addEventListener('DOMContentLoaded', function() {
     // Set up workplace selection
@@ -30,7 +60,10 @@ window.selectWorkplace = async function(workplace) {
     document.querySelectorAll('.workplace-card').forEach(card => {
         card.classList.remove('selected');
     });
-    document.querySelector(`.workplace-card[data-workplace="${workplace}"]`).classList.add('selected');
+    const selectedCard = document.querySelector(`.workplace-card[data-workplace="${workplace}"]`);
+    if (selectedCard) {
+        selectedCard.classList.add('selected');
+    }
     
     // Ensure the workplace document exists
     await initializeWorkplace(workplace);
@@ -38,22 +71,39 @@ window.selectWorkplace = async function(workplace) {
     // Show workplace content
     document.getElementById('workplaceContent').style.display = 'block';
     
-    // Update workplace name
+    // Update workplace name in header
     const names = {
         'esports_lounge': '🎮 eSports Lounge',
         'esports_arena': '🏟️ eSports Arena',
         'it_service_center': '💻 IT Service Center'
     };
-    document.getElementById('selectedWorkplaceName').textContent = names[workplace];
     
     // Reset the schedule tab content
-    document.getElementById('scheduleContent').innerHTML = '<p>Select an option above to get started.</p>';
-    document.getElementById('generateScheduleForm').style.display = 'none';
-    document.getElementById('shiftOverrideSection').style.display = 'none';
-    document.getElementById('scheduleHistorySection').style.display = 'none';
+    const scheduleContent = document.getElementById('scheduleContent');
+    if (scheduleContent) {
+        scheduleContent.innerHTML = '<p>Select an option above to get started.</p>';
+    }
+    
+    const generateForm = document.getElementById('generateScheduleForm');
+    if (generateForm) {
+        generateForm.style.display = 'none';
+    }
+    
+    const shiftOverride = document.getElementById('shiftOverrideSection');
+    if (shiftOverride) {
+        shiftOverride.style.display = 'none';
+    }
+    
+    const scheduleHistory = document.getElementById('scheduleHistorySection');
+    if (scheduleHistory) {
+        scheduleHistory.style.display = 'none';
+    }
     
     // Reset last minute tab content
-    document.getElementById('lastMinuteResults').style.display = 'none';
+    const lastMinuteResults = document.getElementById('lastMinuteResults');
+    if (lastMinuteResults) {
+        lastMinuteResults.style.display = 'none';
+    }
     
     // Reset draft schedule
     window.draftSchedule = null;
@@ -107,7 +157,14 @@ async function loadWorkplaceData(workplace) {
         }
         
         // Load workers for the workplace
-        window.loadWorkers(workplace);
+        if (window.loadWorkers) {
+            window.loadWorkers(workplace);
+        }
+        
+        // Load hours for the workplace
+        if (window.loadHours) {
+            window.loadHours(workplace);
+        }
     } catch (error) {
         console.error('[loadWorkplaceData] Error:', error);
     }
@@ -126,23 +183,45 @@ async function loadAndRenderWorkplaces() {
         const workplacesQuery = collection(workplaceDb, 'workplaces');
         const querySnapshot = await getDocs(workplacesQuery);
         console.log(`[loadAndRenderWorkplaces] Found ${querySnapshot.size} workplaces`);
+        
         if (querySnapshot.empty) {
-            grid.innerHTML = '<div class="loading">No workplaces found. Please add workplaces in Firestore.</div>';
-            return;
+            // Create default workplaces if none exist
+            grid.innerHTML = '';
+            const defaultWorkplaces = [
+                { id: 'esports_lounge', name: '🎮 eSports Lounge' },
+                { id: 'esports_arena', name: '🏟️ eSports Arena' },
+                { id: 'it_service_center', name: '💻 IT Service Center' }
+            ];
+            
+            let html = '';
+            for (const workplace of defaultWorkplaces) {
+                // Create the workplace document in Firebase
+                await initializeWorkplace(workplace.id);
+                
+                html += `
+                    <div class="workplace-card" data-workplace="${workplace.id}">
+                        <h4>${workplace.name}</h4>
+                        <p>${workplace.id}</p>
+                    </div>
+                `;
+            }
+            grid.innerHTML = html;
+        } else {
+            let html = '';
+            querySnapshot.forEach((doc) => {
+                const id = doc.id;
+                const data = doc.data();
+                const name = data.name || id.replace('_', ' ').toUpperCase();
+                html += `
+                    <div class="workplace-card" data-workplace="${id}">
+                        <h4>${name}</h4>
+                        <p>${id}</p>
+                    </div>
+                `;
+            });
+            grid.innerHTML = html;
         }
-        let html = '';
-        querySnapshot.forEach((doc) => {
-            const id = doc.id;
-            const data = doc.data();
-            const name = data.name || id.replace('_', ' ').toUpperCase();
-            html += `
-                <div class="workplace-card" data-workplace="${id}">
-                    <h4>${name}</h4>
-                    <p>${id}</p>
-                </div>
-            `;
-        });
-        grid.innerHTML = html;
+        
         // Re-attach click listeners
         document.querySelectorAll('.workplace-card').forEach(card => {
             card.addEventListener('click', function() {
@@ -157,6 +236,66 @@ async function loadAndRenderWorkplaces() {
         grid.innerHTML = `<div class="loading" style="color: #dc3545;">Error loading workplaces: ${error.message}</div>`;
     }
 }
+
+// Load hours for scheduling
+window.loadHoursForScheduling = async function(workplace) {
+    try {
+        // Ensure workplace document exists
+        await initializeWorkplace(workplace);
+        
+        const workplaceRef = doc(workplaceDb, 'workplaces', workplace);
+        const workplaceDoc = await getDoc(workplaceRef);
+        
+        if (workplaceDoc.exists()) {
+            const data = workplaceDoc.data();
+            return data.hours_of_operation || {};
+        }
+        
+        return {};
+    } catch (error) {
+        console.error('❌ Error loading hours for scheduling:', error);
+        return {};
+    }
+};
+
+// Load current schedule
+window.loadCurrentSchedule = async function() {
+    if (!window.selectedWorkplace) {
+        throw new Error('No workplace selected');
+    }
+    
+    try {
+        // First try to get from schedules subcollection
+        const schedulesRef = collection(workplaceDb, 'workplaces', window.selectedWorkplace, 'schedules');
+        const querySnapshot = await getDocs(schedulesRef);
+        
+        if (!querySnapshot.empty) {
+            // Get the most recent schedule
+            let mostRecent = null;
+            let mostRecentDate = null;
+            
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const createdAt = new Date(data.created_at);
+                
+                if (!mostRecentDate || createdAt > mostRecentDate) {
+                    mostRecent = data;
+                    mostRecentDate = createdAt;
+                }
+            });
+            
+            if (mostRecent && mostRecent.days) {
+                return mostRecent.days;
+            }
+        }
+        
+        // If no schedules found, return empty
+        return null;
+    } catch (error) {
+        console.error('❌ Error loading current schedule:', error);
+        throw error;
+    }
+};
 
 // Make functions available globally
 window.initializeWorkplace = initializeWorkplace;
