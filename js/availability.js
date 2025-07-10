@@ -38,8 +38,8 @@ window.hasWorkerSchedulingConflict = function(worker, day, startHour, endHour, c
     });
 };
 
-// Enhanced last minute availability check with advanced filtering
-window.checkLastMinuteAvailability = async function() {
+// Define the function locally
+async function checkLastMinuteAvailability() {
     if (!window.selectedWorkplace) {
         alert('Please select a workplace first.');
         return;
@@ -124,7 +124,8 @@ window.checkLastMinuteAvailability = async function() {
             <p style="padding: 1rem; color: #dc3545;">Error checking availability: ${error.message}</p>
         `;
     }
-};
+}
+window.checkLastMinuteAvailability = checkLastMinuteAvailability;
 
 // Check if requested time is within operating hours
 function checkIfWithinOperatingHours(day, startHour, endHour, hoursOfOperation) {
