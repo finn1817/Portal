@@ -27,7 +27,15 @@ function parseAvailabilityText(availabilityText) {
     return availability;
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+    const checkAvailabilityBtn = document.getElementById('checkAvailabilityBtn');
+    if (checkAvailabilityBtn) {
+        checkAvailabilityBtn.addEventListener('click', checkLastMinuteAvailability);
+    }
+});
+
 async function checkLastMinuteAvailability() {
+    console.log('checkLastMinuteAvailability CALLED');
     if (!window.selectedWorkplace) {
         alert('Please select a workplace first.');
         return;
@@ -154,7 +162,3 @@ async function checkLastMinuteAvailability() {
     document.getElementById('availableWorkersList').innerHTML = html;
 }
 window.checkLastMinuteAvailability = checkLastMinuteAvailability;
-
-export {
-    checkLastMinuteAvailability
-};
