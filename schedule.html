@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-back {
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .nav-back:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .workplace-selector {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .workplace-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .workplace-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .workplace-card:hover {
+            border-color: #007bff;
+            transform: translateY(-2px);
+        }
+
+        .workplace-card.selected {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .content {
+            padding: 2rem;
+            min-height: 600px;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0.25rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+        }
+
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #1e7e34; }
+        .btn-danger { background: #dc3545; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-secondary { background: #6c757d; }
+        .btn-secondary:hover { background: #545b62; }
+
+        .schedule-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .schedule-option {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .schedule-option:hover {
+            border-color: #007bff;
+            background: #e7f3ff;
+            transform: translateY(-2px);
+        }
+
+        .schedule-form {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            display: none;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .schedule-display {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .day-header {
+            background: #007bff;
+            color: white;
+            padding: 1rem;
+            margin: 1rem 0 0.5rem 0;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .shift {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: #f8f9fa;
+            border-left: 4px solid #28a745;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .shift.unfilled {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .shift.work-study {
+            border-left-color: #ffc107;
+            background: rgba(255, 193, 7, 0.1);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .worker-summary {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .worker-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .worker-table th,
+        .worker-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .worker-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            border: 1px solid #ffeaa7;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            border: 1px solid #c3e6cb;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+            .content {
+                padding: 1rem;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .schedule-options {
+                grid-template-columns: 1fr;
+            }
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div>
+                <h1>📅 Schedule Manager</h1>
+                <p>Advanced Scheduling System</p>
+            </div>
+            <a href="dashboard.html" class="nav-back">← Back to Dashboard</a>
+        </header>
+
+        <div class="workplace-selector">
+            <h3>Select Workplace</h3>
+            <div class="workplace-grid" id="workplaceGrid">
+                <div class="loading">Loading workplaces...</div>
+            </div>
+        </div>
+
+        <div id="scheduleContent" style="display:none">
+            <div class="content">
+                <div class="schedule-options">
+                    <div class="schedule-option" onclick="showGenerateForm()">
+                        <h3>🔄 Generate Schedule</h3>
+                        <p>Create optimized schedule</p>
+                    </div>
+                    <div class="schedule-option" onclick="viewCurrentSchedule()">
+                        <h3>👁️ View Current</h3>
+                        <p>Display active schedule</p>
+                    </div>
+                    <div class="schedule-option" onclick="viewHistory()">
+                        <h3>📚 History</h3>
+                        <p>Manage past schedules</p>
+                    </div>
+                    <div class="schedule-option" onclick="checkAvailability()">
+                        <h3>🚨 Last Minute</h3>
+                        <p>Quick availability check</p>
+                    </div>
+                </div>
+
+                <!-- Generate Form -->
+                <div id="generateForm" class="schedule-form">
+                    <h3>Generate New Schedule</h3>
+                    <div class="form-row">
+                        <div>
+                            <label>Max Hours per Worker</label>
+                            <input type="number" id="maxHours" class="form-control" value="20" min="5" max="40">
+                        </div>
+                        <div>
+                            <label>Workers per Shift</label>
+                            <input type="number" id="workersPerShift" class="form-control" value="2" min="1" max="5">
+                        </div>
+                    </div>
+                    <button class="btn btn-success" onclick="generateSchedule()">🚀 Generate</button>
+                    <button class="btn btn-secondary" onclick="hideAllForms()">Cancel</button>
+                </div>
+
+                <!-- Availability Check Form -->
+                <div id="availabilityForm" class="schedule-form">
+                    <h3>Check Last Minute Availability</h3>
+                    <div class="form-row">
+                        <div>
+                            <label>Day</label>
+                            <select id="availDay" class="form-control">
+                                <option value="Monday">Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                                <option value="Saturday">Saturday</option>
+                                <option value="Sunday">Sunday</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Start Time</label>
+                            <input type="time" id="availStart" class="form-control" value="09:00">
+                        </div>
+                        <div>
+                            <label>End Time</label>
+                            <input type="time" id="availEnd" class="form-control" value="17:00">
+                        </div>
+                    </div>
+                    <button class="btn btn-success" onclick="findAvailable()">🔍 Check</button>
+                    <button class="btn btn-secondary" onclick="hideAllForms()">Cancel</button>
+                </div>
+
+                <div id="scheduleDisplay"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/schedule-manager.js"></script>
+</body>
+</html>

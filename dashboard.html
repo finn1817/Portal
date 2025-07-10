@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workplace Manager Dashboard</title>
-
-    <script type="module" src="js/firebase-config.js"></script>
-    
     <style>
         * {
             margin: 0;
@@ -15,7 +12,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
@@ -34,7 +31,10 @@
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
             color: white;
             padding: 2rem;
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
         .header h1 {
@@ -43,414 +43,124 @@
             font-weight: 300;
         }
 
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        .workplace-selector {
-            background: #f8f9fa;
-            padding: 1.5rem;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        .workplace-selector h3 {
-            margin-bottom: 1rem;
-            color: #333;
-        }
-
-        .workplace-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-        }
-
-        .workplace-card {
-            background: white;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 1.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-
-        .workplace-card:hover {
-            border-color: #007bff;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,123,255,0.2);
-        }
-
-        .workplace-card.selected {
-            border-color: #28a745;
-            background: #f8fff9;
-        }
-
-        .workplace-card h4 {
-            color: #333;
-            margin-bottom: 0.5rem;
-        }
-
-        .workplace-card p {
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-
-        .tabs {
+        .header-actions {
             display: flex;
-            background: #f8f9fa;
-            border-bottom: 1px solid #dee2e6;
-            overflow-x: auto;
+            gap: 1rem;
+            align-items: center;
         }
 
-        .tab {
-            padding: 1rem 1.5rem;
-            cursor: pointer;
-            border: none;
-            background: transparent;
-            color: #6c757d;
-            font-size: 1rem;
-            white-space: nowrap;
-            transition: all 0.3s ease;
-            border-bottom: 3px solid transparent;
-        }
-
-        .tab:hover {
-            background: #e9ecef;
-            color: #495057;
-        }
-
-        .tab.active {
-            color: #007bff;
-            border-bottom-color: #007bff;
-            background: white;
-        }
-
-        .content {
-            padding: 2rem;
-            min-height: 500px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 3rem;
-            color: #6c757d;
-            font-size: 1.1rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #333;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+        .user-info {
+            text-align: right;
         }
 
         .btn {
-            display: inline-block;
             padding: 0.75rem 1.5rem;
-            background: #007bff;
+            background: rgba(255,255,255,0.2);
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 1rem;
             text-decoration: none;
             transition: all 0.3s ease;
-            margin: 0.25rem;
         }
 
         .btn:hover {
-            background: #0056b3;
+            background: rgba(255,255,255,0.3);
             transform: translateY(-1px);
         }
 
-        .btn-success {
-            background: #28a745;
-        }
-
-        .btn-success:hover {
-            background: #1e7e34;
-        }
-
         .btn-danger {
-            background: #dc3545;
+            background: rgba(220,53,69,0.8);
         }
 
-        .btn-danger:hover {
-            background: #c82333;
+        .content {
+            padding: 3rem;
+            text-align: center;
         }
 
-        .btn-secondary {
-            background: #6c757d;
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
         }
 
-        .btn-secondary:hover {
-            background: #545b62;
+        .feature-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            text-align: center;
         }
 
-        .user-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        .feature-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(102,126,234,0.3);
         }
 
-        .user-table th,
-        .user-table td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #dee2e6;
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
         }
 
-        .user-table th {
-            background: #f8f9fa;
-            font-weight: 600;
-            color: #495057;
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
         }
 
-        .user-table tr:hover {
-            background: #f8f9fa;
+        .feature-desc {
+            font-size: 1rem;
+            opacity: 0.9;
+            line-height: 1.5;
         }
 
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
         }
 
         .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: white;
             padding: 1.5rem;
             border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             text-align: center;
         }
 
         .stat-number {
             font-size: 2rem;
             font-weight: bold;
+            color: #667eea;
             margin-bottom: 0.5rem;
         }
 
         .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-
-        .schedule-content {
-            margin-top: 2rem;
-        }
-
-        .schedule-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .schedule-option {
-            background: #f8f9fa;
-            border: 2px solid #dee2e6;
-            border-radius: 10px;
-            padding: 1.5rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .schedule-option:hover {
-            border-color: #007bff;
-            background: #e7f3ff;
-        }
-
-        .schedule-form {
-            background: #f8f9fa;
-            padding: 1.5rem;
-            border-radius: 10px;
-            margin-bottom: 2rem;
-            display: none;
-        }
-
-        .schedule-form h4 {
-            margin-bottom: 1rem;
-            color: #333;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-
-        .schedule-day-header {
-            background: #007bff;
-            color: white;
-            padding: 0.75rem 1rem;
-            margin: 1rem 0 0.5rem 0;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-
-        .schedule-shift {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem;
-            margin-bottom: 0.5rem;
-            background: #f8f9fa;
-            border-left: 4px solid #28a745;
-            border-radius: 0 5px 5px 0;
-        }
-
-        .schedule-shift.unfilled {
-            border-left-color: #dc3545;
-            background: #fff5f5;
-        }
-
-        .schedule-shift.work-study {
-            border-left-color: #28a745;
-            background-color: rgba(40, 167, 69, 0.1);
-        }
-
-        .schedule-time {
-            font-weight: bold;
-            color: #333;
-        }
-
-        .schedule-workers {
             color: #6c757d;
-        }
-
-        .unfilled-text {
-            color: #dc3545;
-            font-weight: bold;
-        }
-
-        .publish-banner {
-            background: #d4edda;
-            color: #155724;
-            padding: 1rem;
-            border-radius: 5px;
-            margin-bottom: 1rem;
-            text-align: center;
-            border: 1px solid #c3e6cb;
-        }
-
-        .publish-btn {
-            background: #28a745;
-            color: white;
-            padding: 1rem 2rem;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-            display: block;
-            width: 100%;
-            max-width: 300px;
-            margin: 0 auto 1rem auto;
-        }
-
-        .publish-btn:hover {
-            background: #1e7e34;
-        }
-
-        .schedule-warning {
-            background: #fff3cd;
-            color: #856404;
-            padding: 1rem;
-            border-radius: 5px;
-            margin-bottom: 1rem;
-            border: 1px solid #ffeaa7;
-        }
-
-        .work-study-issue {
-            color: #dc3545;
-            margin-bottom: 0.25rem;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .last-minute-results {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 5px;
-        }
-
-        .hours-schedule {
-            display: grid;
-            gap: 0.5rem;
-        }
-
-        .day-schedule {
-            display: grid;
-            grid-template-columns: 120px 1fr 1fr 120px;
-            gap: 1rem;
-            align-items: center;
-            padding: 1rem;
-            border: 1px solid #eee;
-            border-radius: 4px;
-            background: white;
+            font-size: 0.9rem;
         }
 
         @media (max-width: 768px) {
-            .container {
-                margin: 0;
-                border-radius: 0;
-            }
-
-            .header h1 {
-                font-size: 2rem;
-            }
-
-            .tabs {
+            .header {
                 flex-direction: column;
+                gap: 1rem;
+                text-align: center;
             }
-
+            
             .content {
-                padding: 1rem;
+                padding: 1.5rem;
             }
-
-            .form-row {
+            
+            .features-grid {
                 grid-template-columns: 1fr;
             }
-
+            
             .stats {
                 grid-template-columns: repeat(2, 1fr);
-            }
-
-            .schedule-options {
-                grid-template-columns: 1fr;
-            }
-
-            .day-schedule {
-                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -458,334 +168,111 @@
 <body>
     <div class="container">
         <header class="header">
-            <h1>🏢 Workplace Manager</h1>
-            <p>Comprehensive Employee Scheduling & Management System</p>
-            <!-- Hidden user info elements required by JS -->
-            <span id="userEmail" style="display:none"></span>
-            <span id="welcomeName" style="display:none"></span>
-            <span id="userRole" style="display:none"></span>
-            <span id="accountType" style="display:none"></span>
-            <span id="lastLogin" style="display:none"></span>
-            <span id="loginTime" style="display:none"></span>
-            <span id="profileEmail" style="display:none"></span>
-            <span id="profileType" style="display:none"></span>
-            <span id="profileId" style="display:none"></span>
-            <span id="profileCreated" style="display:none"></span>
+            <div>
+                <h1>🏢 Workplace Manager</h1>
+                <p>Employee Management & Scheduling System</p>
+            </div>
+            <div class="header-actions">
+                <div class="user-info">
+                    <div id="welcomeText">Welcome!</div>
+                    <div id="userRole">User</div>
+                </div>
+                <button class="btn btn-danger" onclick="logout()">🚪 Logout</button>
+            </div>
         </header>
 
-        <div class="workplace-selector">
-            <h3>Select Workplace</h3>
-            <div class="workplace-grid" id="workplaceGrid">
-                <div class="loading">Loading workplaces...</div>
+        <div class="content">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalWorkplaces">3</div>
+                    <div class="stat-label">Workplaces</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalWorkers">-</div>
+                    <div class="stat-label">Total Workers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="activeSchedules">-</div>
+                    <div class="stat-label">Active Schedules</div>
+                </div>
             </div>
-        </div>
 
-        <div id="workplaceContent" style="display:none">
-            <nav class="tabs">
-                <button class="tab active" data-tab="workers">👥 Workers</button>
-                <button class="tab" data-tab="hours">🕒 Hours</button>
-                <button class="tab" data-tab="schedule">📅 Schedule</button>
-                <button class="tab" data-tab="last-minute">🚨 Last Minute</button>
-                <button class="tab" data-tab="reports">📊 Reports</button>
-                <button class="tab" data-tab="settings">⚙️ Settings</button>
-            </nav>
+            <div class="features-grid">
+                <a href="schedule.html" class="feature-card">
+                    <div class="feature-icon">📅</div>
+                    <div class="feature-title">Schedule Manager</div>
+                    <div class="feature-desc">Create, manage, and optimize work schedules with advanced algorithms</div>
+                </a>
 
-            <main class="content">
-                <!-- Workers Tab -->
-                <div id="workers-tab" class="tab-content active">
-                    <h2>👥 Workers Management</h2>
-                    <p>Manage your team members and their availability.</p>
-                    
-                    <div class="form-group">
-                        <button class="btn btn-success" id="addWorkerBtn">➕ Add New Worker</button>
-                    </div>
-
-                    <div id="addWorkerForm" class="form-group hidden">
-                        <h3>Add New Worker</h3>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>First Name</label>
-                                <input type="text" id="workerFirstName" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Last Name</label>
-                                <input type="text" id="workerLastName" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Email</label>
-                                <input type="email" id="workerEmail" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Work Study Student</label>
-                                <select id="workerWorkStudy" class="form-control">
-                                    <option value="No">No</option>
-                                    <option value="Yes">Yes</option>
-                                </select>
-                            </div>
-                        </div>
-                        <h4>Availability</h4>
-                        <input type="text" id="workerAvailability" class="form-control" placeholder="e.g. Monday 12:00-16:00, Wednesday 14:00-18:00">
-                        <div style="margin-top: 1rem;">
-                            <button class="btn btn-success" onclick="addWorker()">Add Worker</button>
-                            <button class="btn btn-secondary" onclick="hideAddWorkerForm()">Cancel</button>
-                        </div>
-                    </div>
-
-                    <!-- Add missing containers for JS compatibility -->
-                    <div id="workersLoading" class="loading" style="display:none;">Loading workers...</div>
-                    <div id="workersContainer" style="display:none;">
-                        <table class="user-table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Work Study</th>
-                                    <th>Availability</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="workersTableBody">
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div id="workersContent">
-                        <div class="loading">Select a workplace to view workers.</div>
-                    </div>
+                <div class="feature-card" onclick="openWorkerManagement()">
+                    <div class="feature-icon">👥</div>
+                    <div class="feature-title">Worker Management</div>
+                    <div class="feature-desc">Manage team members, availability, and work-study assignments</div>
                 </div>
 
-                <!-- Hours Tab -->
-                <div id="hours-tab" class="tab-content hidden">
-                    <h2>🕒 Hours of Operation</h2>
-                    <p>Set operating hours for each day of the week.</p>
-                    
-                    <!-- Add missing container for JS compatibility -->
-                    <div id="hoursLoading" class="loading" style="display:none;">Loading hours...</div>
-                    <div id="hoursSchedule"></div>
-                    <div style="margin-top: 1rem;">
-                        <button class="btn btn-success" id="saveHoursBtn">💾 Save Hours</button>
-                    </div>
-
-                    <div id="hoursContent">
-                        <div class="loading">Select a workplace to manage hours.</div>
-                    </div>
+                <div class="feature-card" onclick="openHoursManagement()">
+                    <div class="feature-icon">🕒</div>
+                    <div class="feature-title">Hours of Operation</div>
+                    <div class="feature-desc">Set and manage operating hours for each workplace</div>
                 </div>
 
-                <!-- Schedule Tab -->
-                <div id="schedule-tab" class="tab-content hidden">
-                    <h2>📅 Schedule Management</h2>
-                    <p>Generate and manage work schedules.</p>
-                    
-                    <div class="schedule-options">
-                        <div class="schedule-option" id="generateScheduleOption">
-                            <h4>🔄 Generate New Schedule</h4>
-                            <p>Create an optimized schedule based on availability</p>
-                        </div>
-                        <div class="schedule-option" id="viewCurrentScheduleOption">
-                            <h4>👁️ View Current Schedule</h4>
-                            <p>Display the active schedule</p>
-                        </div>
-                        <div class="schedule-option" id="shiftOverrideOption">
-                            <h4>✏️ Modify Shifts</h4>
-                            <p>Make manual adjustments to schedules</p>
-                        </div>
-                        <div class="schedule-option" id="scheduleHistoryOption">
-                            <h4>📚 Schedule History</h4>
-                            <p>View and manage past schedules</p>
-                        </div>
-                    </div>
-
-                    <!-- Generate Schedule Form -->
-                    <div id="generateScheduleForm" class="schedule-form">
-                        <h4>🔄 Generate Schedule Settings</h4>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="maxHoursPerWorker">Max Hours per Worker</label>
-                                <input type="number" id="maxHoursPerWorker" class="form-control" value="20" min="1" max="40">
-                            </div>
-                            <div class="form-group">
-                                <label for="maxWorkersPerShift">Max Workers per Shift</label>
-                                <input type="number" id="maxWorkersPerShift" class="form-control" value="2" min="1" max="10">
-                            </div>
-                            <div class="form-group">
-                                <label for="minHoursPerWorker">Min Hours per Worker</label>
-                                <input type="number" id="minHoursPerWorker" class="form-control" value="3" min="1" max="20">
-                            </div>
-                        </div>
-                        <div>
-                            <button class="btn btn-success" id="generateScheduleBtn">🚀 Generate Schedule</button>
-                            <button class="btn btn-secondary" id="cancelGenerateBtn">Cancel</button>
-                        </div>
-                    </div>
-
-                    <!-- Shift Override Section -->
-                    <div id="shiftOverrideSection" class="schedule-form">
-                        <h4>✏️ Modify Shift Assignments</h4>
-                        <div id="shiftOverrideContent">
-                            <!-- Shift override content will be populated by JavaScript -->
-                        </div>
-                        <div style="margin-top: 1rem;">
-                            <button class="btn btn-success" id="saveOverridesBtn">💾 Save Changes</button>
-                            <button class="btn btn-secondary" id="cancelOverrideBtn">Cancel</button>
-                        </div>
-                    </div>
-
-                    <!-- Schedule History Section -->
-                    <div id="scheduleHistorySection" class="schedule-form">
-                        <h4>📚 Schedule History</h4>
-                        <div id="scheduleHistoryList">
-                            <!-- Schedule history will be populated by JavaScript -->
-                        </div>
-                        <div style="margin-top: 1rem;">
-                            <button class="btn btn-secondary" id="backToScheduleBtn">← Back to Schedule</button>
-                        </div>
-                    </div>
-
-                    <div id="scheduleContent">
-                        <div class="loading">Select a workplace and choose an option above to get started.</div>
-                    </div>
+                <div class="feature-card" onclick="openReports()">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">Reports & Analytics</div>
+                    <div class="feature-desc">View detailed insights and analytics about your workforce</div>
                 </div>
-
-                <!-- Last Minute Tab -->
-                <div id="last-minute-tab" class="tab-content hidden">
-                    <h2>🚨 Last Minute Availability</h2>
-                    <p>Check who's available for urgent shift coverage.</p>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="lastMinuteDay">Day</label>
-                            <select id="lastMinuteDay" class="form-control">
-                                <option value="Monday">Monday</option>
-                                <option value="Tuesday">Tuesday</option>
-                                <option value="Wednesday">Wednesday</option>
-                                <option value="Thursday">Thursday</option>
-                                <option value="Friday">Friday</option>
-                                <option value="Saturday">Saturday</option>
-                                <option value="Sunday">Sunday</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="lastMinuteStart">Start Time</label>
-                            <input type="time" id="lastMinuteStart" class="form-control" value="09:00">
-                        </div>
-                        <div class="form-group">
-                            <label for="lastMinuteEnd">End Time</label>
-                            <input type="time" id="lastMinuteEnd" class="form-control" value="17:00">
-                        </div>
-                    </div>
-                    
-                    <button class="btn btn-success" id="checkAvailabilityBtn">🔍 Check Availability</button>
-                    
-                    <div id="lastMinuteResults" class="last-minute-results" style="display: none;">
-                        <div id="availableWorkersCount"></div>
-                        <div id="availableWorkersList"></div>
-                    </div>
-                </div>
-
-                <!-- Reports Tab -->
-                <div id="reports-tab" class="tab-content hidden">
-                    <h2>📊 Reports & Analytics</h2>
-                    <p>View detailed reports and analytics.</p>
-                    
-                    <div id="reportsContent">
-                        <div class="loading">Select a workplace to view reports.</div>
-                    </div>
-                </div>
-
-                <!-- Settings Tab -->
-                <div id="settings-tab" class="tab-content hidden">
-                    <h2>⚙️ Settings</h2>
-                    <p>Manage application settings and preferences.</p>
-                    
-                    <div id="settingsContent">
-                        <div class="form-group">
-                            <label>Theme</label>
-                            <select class="form-control" id="themeSelector">
-                                <option value="light">Light</option>
-                                <option value="dark">Dark</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Notifications</label>
-                            <div>
-                                <label>
-                                    <input type="checkbox" id="emailNotifications" checked>
-                                    Email Notifications
-                                </label>
-                            </div>
-                            <div>
-                                <label>
-                                    <input type="checkbox" id="pushNotifications" checked>
-                                    Push Notifications
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <button class="btn btn-success" onclick="saveSettings()">💾 Save Settings</button>
-                        </div>
-                    </div>
-                </div>
-            </main>
+            </div>
         </div>
     </div>
 
-    <!-- Helper functions -->
     <script>
-        // Global utility functions
-        window.showAddWorkerForm = function() {
-            document.getElementById('addWorkerForm').classList.remove('hidden');
-        };
-
-        window.hideAddWorkerForm = function() {
-            document.getElementById('addWorkerForm').classList.add('hidden');
-            // Clear form
-            document.getElementById('workerFirstName').value = '';
-            document.getElementById('workerLastName').value = '';
-            document.getElementById('workerEmail').value = '';
-            document.getElementById('workerWorkStudy').value = 'No';
-            document.getElementById('workerAvailability').value = '';
-        };
-
-        window.saveSettings = function() {
-            alert('Settings saved successfully!');
-        };
-
-        // Time utility functions
-        window.timeToHour = function(timeStr) {
-            if (!timeStr) return 0;
-            const [hours, minutes] = timeStr.split(':').map(Number);
-            return hours + (minutes / 60);
-        };
-
-        window.hourToTimeStr = function(hour) {
-            const h = Math.floor(hour);
-            const m = Math.round((hour - h) * 60);
-            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-        };
-
-        window.formatTimeAMPM = function(timeStr) {
-            if (!timeStr) return '';
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
             
-            let [hours, minutes] = timeStr.split(':').map(Number);
-            const period = hours >= 12 ? 'PM' : 'AM';
+            if (!user.email) {
+                window.location.href = 'index.html';
+                return;
+            }
             
-            hours = hours % 12;
-            hours = hours ? hours : 12; // Convert 0 to 12 for 12 AM
+            document.getElementById('welcomeText').textContent = `Welcome, ${user.email.split('@')[0]}!`;
+            document.getElementById('userRole').textContent = user.isAdmin ? 'Administrator' : 'User';
             
-            return `${hours}:${minutes.toString().padStart(2, '0')} ${period}`;
-        };
+            loadDashboardStats();
+        });
+
+        // Load dashboard statistics
+        async function loadDashboardStats() {
+            try {
+                // This would connect to Firebase to get real stats
+                // For now, showing placeholder values
+                document.getElementById('totalWorkers').textContent = '0';
+                document.getElementById('activeSchedules').textContent = '0';
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Feature functions
+        function openWorkerManagement() {
+            alert('Worker Management feature coming soon!\n\nThis will allow you to:\n• Add/edit/remove workers\n• Manage availability\n• Handle work-study assignments');
+        }
+
+        function openHoursManagement() {
+            alert('Hours Management feature coming soon!\n\nThis will allow you to:\n• Set operating hours\n• Manage multiple time periods\n• Configure different schedules per workplace');
+        }
+
+        function openReports() {
+            alert('Reports & Analytics feature coming soon!\n\nThis will provide:\n• Worker utilization reports\n• Schedule efficiency metrics\n• Work-study compliance tracking');
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('user');
+                window.location.href = 'index.html';
+            }
+        }
     </script>
-
-    <!-- Initialize the app -->
-<script type="module" src="js/workplaces.js"></script>
-<script type="module" src="js/workers.js"></script>
-<script type="module" src="js/hours.js"></script>
-<script type="module" src="js/schedule.js"></script>
-<script type="module" src="js/availability.js"></script>
-<script type="module" src="js/ui.js"></script>
-<script type="module" src="js/users.js"></script>
 </body>
 </html>
