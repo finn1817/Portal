@@ -10,12 +10,18 @@ function parseAvailabilityText(availabilityText) {
         const match = block.match(/(\w+)\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})/i);
         if (match) {
             let [ , day, start, end ] = match;
-            day = day.charAt(0).toUpperCase() + day.slice(1).toLowerCase();
+            day = day.trim().toLowerCase();
             const dayMap = {
-                'Mon': 'Monday', 'Tue': 'Tuesday', 'Wed': 'Wednesday',
-                'Thu': 'Thursday', 'Fri': 'Friday', 'Sat': 'Saturday', 'Sun': 'Sunday'
+                'mon': 'Monday', 'monday': 'Monday',
+                'tue': 'Tuesday', 'tuesday': 'Tuesday',
+                'wed': 'Wednesday', 'wednesday': 'Wednesday',
+                'thu': 'Thursday', 'thursday': 'Thursday',
+                'fri': 'Friday', 'friday': 'Friday',
+                'sat': 'Saturday', 'saturday': 'Saturday',
+                'sun': 'Sunday', 'sunday': 'Sunday'
             };
             if (dayMap[day]) day = dayMap[day];
+            else return; // skip if not a valid day
             if (!availability[day]) availability[day] = [];
             const startHour = window.timeToHour(start);
             const endHour = window.timeToHour(end);
@@ -64,6 +70,8 @@ async function checkLastMinuteAvailability() {
         if (Object.keys(availabilityObj).length === 0 && data['Days & Times Available']) {
             availabilityObj = parseAvailabilityText(data['Days & Times Available']);
         }
+        // Debug logging for availability parsing
+        console.log('Worker:', data['First Name'], data['Last Name'], 'Availability:', availabilityObj);
         workers.push({
             id: docSnap.id,
             first_name: data['First Name'] || 'Unknown',
