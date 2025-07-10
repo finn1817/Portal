@@ -1,4 +1,5 @@
 // Enhanced last minute availability checking with scheduling integration
+import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { workplaceDb } from './firebase-config.js';
 
 // Add event listeners
@@ -38,92 +39,124 @@ window.hasWorkerSchedulingConflict = function(worker, day, startHour, endHour, c
     });
 };
 
-// Define the function locally
+// Helper: Parse availability text to structured object (reuse from workers.js if needed)
+function parseAvailabilityText(availabilityText) {
+    const availability = {};
+    if (!availabilityText) return availability;
+
+    const blocks = availabilityText.split(',').map(s => s.trim());
+    blocks.forEach(block => {
+        const match = block.match(/(\w+)\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})/i);
+        if (match) {
+            let [ , day, start, end ] = match;
+            day = day.charAt(0).toUpperCase() + day.slice(1).toLowerCase();
+            const dayMap = {
+                'Mon': 'Monday', 'Tue': 'Tuesday', 'Wed': 'Wednesday',
+                'Thu': 'Thursday', 'Fri': 'Friday', 'Sat': 'Saturday', 'Sun': 'Sunday'
+            };
+            if (dayMap[day]) day = dayMap[day];
+            if (!availability[day]) availability[day] = [];
+            const startHour = window.timeToHour(start);
+            const endHour = window.timeToHour(end);
+            if (endHour > startHour) {
+                availability[day].push({ start, end, start_hour: startHour, end_hour: endHour });
+            }
+        }
+    });
+    return availability;
+}
+
+// The main function
 async function checkLastMinuteAvailability() {
     if (!window.selectedWorkplace) {
         alert('Please select a workplace first.');
         return;
     }
-    
+
     const day = document.getElementById('lastMinuteDay').value;
     const startTime = document.getElementById('lastMinuteStart').value;
     const endTime = document.getElementById('lastMinuteEnd').value;
-    
-    // Enhanced validation
+
     if (!startTime || !endTime) {
         alert('Please enter both start and end times.');
         return;
     }
-    
+
     const startHour = window.timeToHour(startTime);
     const endHour = window.timeToHour(endTime);
-    
     if (endHour <= startHour) {
         alert('End time must be after start time.');
         return;
     }
-    
-    // Check if the time is within operating hours
-    const hoursOfOperation = await window.loadHoursForScheduling(window.selectedWorkplace);
-    const isWithinOperatingHours = checkIfWithinOperatingHours(day, startHour, endHour, hoursOfOperation);
-    
+
     // Show loading state
     document.getElementById('lastMinuteResults').style.display = 'block';
     document.getElementById('availableWorkersList').innerHTML = '<div class="loading">🔍 Finding available workers...</div>';
-    
-    try {
-        // Get current schedule to check for conflicts
-        let currentSchedule = null;
-        try {
-            currentSchedule = await window.loadCurrentSchedule();
-        } catch (error) {
-            console.log('No current schedule found, proceeding without conflict check');
+
+    // --- Fetch latest workers from Firestore ---
+    const workersQuery = collection(workplaceDb, 'workplaces', window.selectedWorkplace, 'workers');
+    const querySnapshot = await getDocs(workersQuery);
+    const workers = [];
+    querySnapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        // Parse availability
+        let availabilityObj = data.availability || {};
+        if (Object.keys(availabilityObj).length === 0 && data['Days & Times Available']) {
+            availabilityObj = parseAvailabilityText(data['Days & Times Available']);
         }
-        
-        // Find available workers with advanced filtering
-        const availableWorkers = window.workers.filter(worker => {
-            // Basic availability check
-            if (!window.isWorkerAvailableDuringHours(worker, day, startHour, endHour)) {
-                return false;
-            }
-            
-            // Check for scheduling conflicts if current schedule exists
-            if (currentSchedule && window.hasWorkerSchedulingConflict(worker, day, startHour, endHour, currentSchedule)) {
-                return false;
-            }
-            
-            return true;
+        workers.push({
+            id: docSnap.id,
+            first_name: data['First Name'] || 'Unknown',
+            last_name: data['Last Name'] || 'Worker',
+            email: data['Email'] || '',
+            work_study: data['Work Study'] === 'Yes' || data['Work Study'] === true,
+            availability: availabilityObj
         });
-        
-        // Separate available workers by type and current status
-        const workStudyAvailable = availableWorkers.filter(w => w.work_study);
-        const regularAvailable = availableWorkers.filter(w => !w.work_study);
-        
-        // Calculate current hours for each worker if schedule exists
-        const workerCurrentHours = {};
-        if (currentSchedule) {
-            for (const worker of availableWorkers) {
-                workerCurrentHours[worker.email] = window.getWorkerAssignedHours(worker, currentSchedule);
-            }
-        }
-        
-        // Display enhanced results
-        displayEnhancedAvailabilityResults(
-            day, 
-            startTime, 
-            endTime, 
-            workStudyAvailable, 
-            regularAvailable, 
-            isWithinOperatingHours,
-            workerCurrentHours
+    });
+
+    // --- Find available workers for the requested slot ---
+    const availableWorkers = workers.filter(worker => {
+        const dayAvailability = worker.availability[day] || [];
+        return dayAvailability.some(block =>
+            block.start_hour <= startHour && endHour <= block.end_hour
         );
-        
-    } catch (error) {
-        console.error('❌ Error checking availability:', error);
+    });
+
+    // --- Display results ---
+    const countHtml = `
+        <div style="font-size:1.2rem;font-weight:bold;margin-bottom:0.5rem;">
+            📋 <strong>${availableWorkers.length}</strong> workers available on <strong>${day}</strong>
+            from <strong>${window.formatTimeAMPM(startTime)}</strong> to <strong>${window.formatTimeAMPM(endTime)}</strong>
+        </div>
+    `;
+    document.getElementById('availableWorkersCount').innerHTML = countHtml;
+
+    if (availableWorkers.length === 0) {
         document.getElementById('availableWorkersList').innerHTML = `
-            <p style="padding: 1rem; color: #dc3545;">Error checking availability: ${error.message}</p>
+            <div style="padding:1.5rem;text-align:center;color:#dc3545;background:#f8d7da;border:1px solid #f5c6cb;border-radius:4px;">
+                <h5>❌ No workers available during this time slot</h5>
+            </div>
         `;
+        return;
     }
+
+    let html = '';
+    availableWorkers.forEach(worker => {
+        html += `
+            <div style="padding:1rem;border-bottom:1px solid #dee2e6;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <div style="font-weight:bold;">${worker.first_name} ${worker.last_name}</div>
+                    <div style="font-size:0.9rem;color:#6c757d;">${worker.email}</div>
+                </div>
+                <button onclick="contactWorker('${worker.email}', '${day}', '${startTime}', '${endTime}')"
+                    class="contact-btn"
+                    style="padding:0.5rem 1rem;background-color:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;font-size:0.9rem;">
+                    📧 Contact
+                </button>
+            </div>
+        `;
+    });
+    document.getElementById('availableWorkersList').innerHTML = html;
 }
 window.checkLastMinuteAvailability = checkLastMinuteAvailability;
 
