@@ -1,9 +1,23 @@
-// Firebase configuration and initialization
+// js/firebase-config.js
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
-import { getFirestore } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+import { 
+    getFirestore,
+    collection,
+    doc,
+    getDocs,
+    getDoc,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    query,
+    where,
+    orderBy,
+    limit,
+    onSnapshot
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
-// User Management Firebase Config
-const userFirebaseConfig = {
+// USERS DATABASE CONFIG (for login - index.html)
+const usersFirebaseConfig = {
     apiKey: "AIzaSyAt_HJiP_uuWC7-AqMKlfLwjQFsESjB364",
     authDomain: "my-admin-dashboard-b9c89.firebaseapp.com",
     projectId: "my-admin-dashboard-b9c89",
@@ -13,7 +27,7 @@ const userFirebaseConfig = {
     measurementId: "G-DGTX5YCKYF"
 };
 
-// Workplace Firebase Config
+// WORKPLACE DATABASE CONFIG (for dashboard - dashboard.html)
 const workplaceFirebaseConfig = {
     apiKey: "AIzaSyBkkq4nPnmyfSOKtVLsO95rpAUsMDA1o0A",
     authDomain: "workplace-scheduler-ace38.firebaseapp.com",
@@ -25,12 +39,50 @@ const workplaceFirebaseConfig = {
 };
 
 // Initialize both Firebase apps
-export const userApp = initializeApp(userFirebaseConfig, "users");
-export const workplaceApp = initializeApp(workplaceFirebaseConfig, "workplace");
+const usersApp = initializeApp(usersFirebaseConfig, "users");
+const workplaceApp = initializeApp(workplaceFirebaseConfig, "workplace");
 
-// Get database instances
-export const userDb = getFirestore(userApp);
-export const workplaceDb = getFirestore(workplaceApp);
+// Initialize databases
+const usersDb = getFirestore(usersApp);
+const workplaceDb = getFirestore(workplaceApp);
 
 // Constants
-export const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+// Export everything
+export { 
+    usersDb,
+    workplaceDb,
+    DAYS,
+    collection,
+    doc,
+    getDocs,
+    getDoc,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    query,
+    where,
+    orderBy,
+    limit,
+    onSnapshot
+};
+
+// Make available globally for non-module scripts
+window.usersDb = usersDb;
+window.workplaceDb = workplaceDb;
+window.DAYS = DAYS;
+window.collection = collection;
+window.doc = doc;
+window.getDocs = getDocs;
+window.getDoc = getDoc;
+window.addDoc = addDoc;
+window.updateDoc = updateDoc;
+window.deleteDoc = deleteDoc;
+window.query = query;
+window.where = where;
+window.orderBy = orderBy;
+window.limit = limit;
+window.onSnapshot = onSnapshot;
+
+console.log('✅ Firebase config loaded - Users and Workplace databases ready');

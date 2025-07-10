@@ -1247,9 +1247,15 @@ function calculateAssignedHours(schedule) {
 // Display schedule with publish option
 function displayScheduleWithPublishOption(schedule, isCurrent = false, scheduleId = null) {
     if (!schedule) return;
-    
+
+    // Add debug logs
+    console.log('DEBUG: window.workers:', window.workers);
+    console.log('DEBUG: schedule:', schedule);
+
     const assignedHours = calculateAssignedHours(schedule);
-    
+
+    console.log('DEBUG: assignedHours:', assignedHours);
+
     // Calculate some statistics
     const totalShifts = Object.values(schedule).flat().length;
     const unfilledShifts = Object.values(schedule).flat().filter(shift => 
@@ -1415,7 +1421,12 @@ function displayScheduleWithPublishOption(schedule, isCurrent = false, scheduleI
 // Enhanced schedule display with comprehensive analytics
 function displayAdvancedScheduleWithAnalytics(scheduleResult, isCurrent = false, scheduleId = null) {
     const { schedule, assignedHours, analytics, wsIssues, unfilledShifts } = scheduleResult;
-    
+
+    // Add debug logs
+    console.log('DEBUG: window.workers:', window.workers);
+    console.log('DEBUG: schedule:', schedule);
+    console.log('DEBUG: assignedHours:', assignedHours);
+
     // Calculate display statistics
     const totalShifts = Object.values(schedule).flat().length;
     const unfilledCount = unfilledShifts.length;
