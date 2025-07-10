@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workers Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-back {
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .nav-back:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .controls {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+        }
+
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #1e7e34; }
+        .btn-danger { background: #dc3545; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-secondary { background: #6c757d; }
+        .btn-secondary:hover { background: #545b62; }
+
+        .workers-table {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .work-study-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .work-study-yes {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .work-study-no {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .firebase-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .firebase-connected { color: #28a745; }
+        .firebase-disconnected { color: #dc3545; }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .content {
+                padding: 1rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .table {
+                font-size: 0.8rem;
+            }
+
+            .table th,
+            .table td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div>
+                <h1 id="workplaceName">👥 Workers Management</h1>
+                <p>Manage your team members and their availability</p>
+            </div>
+            <a href="dashboard.html" class="nav-back">← Back to Dashboard</a>
+        </header>
+
+        <div class="content">
+            <div class="controls">
+                <div class="firebase-status" id="firebaseStatus">
+                    <span id="firebaseIndicator">🔴</span>
+                    <span id="firebaseText">Checking...</span>
+                </div>
+                <div>
+                    <button class="btn btn-success" onclick="addWorker()">➕ Add Worker</button>
+                    <button class="btn btn-secondary" onclick="refreshWorkers()">🔄 Refresh</button>
+                    <button class="btn btn-danger" onclick="removeAllWorkers()">🗑️ Remove All</button>
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalWorkers">0</div>
+                    <div class="stat-label">Total Workers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="workStudyWorkers">0</div>
+                    <div class="stat-label">Work Study Students</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="regularWorkers">0</div>
+                    <div class="stat-label">Regular Workers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="averageAvailability">0</div>
+                    <div class="stat-label">Avg Hours Available</div>
+                </div>
+            </div>
+
+            <div class="workers-table">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Work Study</th>
+                            <th>Availability</th>
+                            <th>Total Hours</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="workersTableBody">
+                        <tr>
+                            <td colspan="6">
+                                <div class="loading">Loading workers...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+        import { 
+            getFirestore, collection, getDocs, doc, addDoc, deleteDoc, updateDoc
+        } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+
+        // Firebase config
+        const config = {
+            apiKey: "AIzaSyBkkq4nPnmyfSOKtVLsO95rpAUsMDA1o0A",
+            authDomain: "workplace-scheduler-ace38.firebaseapp.com",
+            projectId: "workplace-scheduler-ace38",
+            storageBucket: "workplace-scheduler-ace38.firebasestorage.app",
+            messagingSenderId: "153631302747",
+            appId: "1:153631302747:web:2c731351893dca19510b7e"
+        };
+
+        let app, db, firebaseConnected = false;
+        let currentWorkplace = null;
+        let workers = [];
+
+        // Utility functions
+        const parseAvailability = (availabilityText) => {
+            const availability = {};
+            if (!availabilityText) return availability;
+            
+            const blocks = availabilityText.split(',').map(s => s.trim());
+            blocks.forEach(block => {
+                const match = block.match(/(\w+)\s+(\d{1,2}:\d{2})-(\d{1,2}:\d{2})/i);
+                if (match) {
+                    const [, day, start, end] = match;
+                    const dayName = day.charAt(0).toUpperCase() + day.slice(1).toLowerCase();
+                    
+                    const dayMap = {
+                        'Mon': 'Monday', 'Tue': 'Tuesday', 'Wed': 'Wednesday',
+                        'Thu': 'Thursday', 'Fri': 'Friday', 'Sat': 'Saturday', 'Sun': 'Sunday'
+                    };
+                    
+                    const fullDay = dayMap[dayName] || dayName;
+                    if (!availability[fullDay]) availability[fullDay] = [];
+                    
+                    const startHour = timeToHour(start);
+                    const endHour = timeToHour(end);
+                    
+                    availability[fullDay].push({
+                        start: start,
+                        end: end,
+                        start_hour: startHour,
+                        end_hour: endHour
+                    });
+                }
+            });
+            
+            return availability;
+        };
+
+        const timeToHour = (timeStr) => {
+            if (!timeStr) return 0;
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours + (minutes / 60);
+        };
+
+        const calculateTotalHours = (availability) => {
+            let total = 0;
+            Object.values(availability).forEach(slots => {
+                slots.forEach(slot => {
+                    total += slot.end_hour - slot.start_hour;
+                });
+            });
+            return total;
+        };
+
+        // Initialize the app
+        async function initializeApp() {
+            // Get workplace from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            currentWorkplace = urlParams.get('workplace');
+            
+            if (!currentWorkplace) {
+                alert('No workplace specified');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            // Update title
+            const workplaceName = currentWorkplace.replace('_', ' ').toUpperCase();
+            document.getElementById('workplaceName').textContent = `👥 ${workplaceName} Workers`;
+
+            // Initialize Firebase
+            try {
+                app = initializeApp(config);
+                db = getFirestore(app);
+                firebaseConnected = true;
+                
+                document.getElementById('firebaseIndicator').textContent = '🟢';
+                document.getElementById('firebaseText').textContent = 'Firebase Connected';
+                document.getElementById('firebaseStatus').className = 'firebase-status firebase-connected';
+            } catch (error) {
+                console.error('Firebase connection failed:', error);
+                firebaseConnected = false;
+                
+                document.getElementById('firebaseIndicator').textContent = '🔴';
+                document.getElementById('firebaseText').textContent = 'Firebase Disconnected';
+                document.getElementById('firebaseStatus').className = 'firebase-status firebase-disconnected';
+            }
+
+            // Load workers
+            await loadWorkers();
+        }
+
+        // Load workers from Firebase
+        async function loadWorkers() {
+            if (!firebaseConnected) {
+                document.getElementById('workersTableBody').innerHTML = `
+                    <tr><td colspan="6" style="text-align: center; color: #dc3545;">
+                        Firebase not connected. Cannot load workers.
+                    </td></tr>
+                `;
+                return;
+            }
+
+            try {
+                const workersSnapshot = await getDocs(collection(db, 'workplaces', currentWorkplace, 'workers'));
+                workers = [];
+
+                workersSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const availability = parseAvailability(data['Days & Times Available'] || '');
+                    
+                    workers.push({
+                        id: doc.id,
+                        firstName: data['First Name'] || 'Unknown',
+                        lastName: data['Last Name'] || 'Worker',
+                        email: data['Email'] || 'no-email',
+                        workStudy: data['Work Study'] === 'Yes',
+                        availabilityText: data['Days & Times Available'] || '',
+                        availability: availability,
+                        totalHours: calculateTotalHours(availability)
+                    });
+                });
+
+                displayWorkers();
+                updateStats();
+
+            } catch (error) {
+                console.error('Error loading workers:', error);
+                document.getElementById('workersTableBody').innerHTML = `
+                    <tr><td colspan="6" style="text-align: center; color: #dc3545;">
+                        Error loading workers: ${error.message}
+                    </td></tr>
+                `;
+            }
+        }
+
+        // Display workers in table
+        function displayWorkers() {
+            const tbody = document.getElementById('workersTableBody');
+            
+            if (workers.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="6" style="text-align: center; color: #6c757d; padding: 2rem;">
+                        No workers found. Add some workers to get started!
+                    </td></tr>
+                `;
+                return;
+            }
+
+            let html = '';
+            workers.forEach(worker => {
+                const workStudyClass = worker.workStudy ? 'work-study-yes' : 'work-study-no';
+                const workStudyText = worker.workStudy ? 'Yes' : 'No';
+                
+                // Check for work study availability issues
+                const hasIssue = worker.workStudy && worker.totalHours < 5;
+                const nameStyle = hasIssue ? 'color: #dc3545;' : '';
+                const issueIcon = hasIssue ? ' ⚠️' : '';
+
+                html += `
+                    <tr>
+                        <td style="${nameStyle}">
+                            ${worker.firstName} ${worker.lastName}${issueIcon}
+                            ${hasIssue ? '<br><small style="color: #dc3545;">(Low Availability)</small>' : ''}
+                        </td>
+                        <td>${worker.email}</td>
+                        <td>
+                            <span class="work-study-badge ${workStudyClass}">
+                                ${workStudyText}
+                            </span>
+                        </td>
+                        <td style="max-width: 300px; word-wrap: break-word;">
+                            ${worker.availabilityText || 'Not set'}
+                        </td>
+                        <td>${worker.totalHours.toFixed(1)} hrs/week</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-secondary btn-sm" onclick="editWorker('${worker.id}')">
+                                    ✏️ Edit
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteWorker('${worker.id}', '${worker.firstName} ${worker.lastName}')">
+                                    🗑️ Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        // Update statistics
+        function updateStats() {
+            const total = workers.length;
+            const workStudy = workers.filter(w => w.workStudy).length;
+            const regular = total - workStudy;
+            const avgHours = total > 0 ? (workers.reduce((sum, w) => sum + w.totalHours, 0) / total).toFixed(1) : 0;
+
+            document.getElementById('totalWorkers').textContent = total;
+            document.getElementById('workStudyWorkers').textContent = workStudy;
+            document.getElementById('regularWorkers').textContent = regular;
+            document.getElementById('averageAvailability').textContent = avgHours;
+        }
+
+        // Global functions
+        window.addWorker = function() {
+            const firstName = prompt('Enter first name:');
+            if (!firstName) return;
+            
+            const lastName = prompt('Enter last name:');
+            if (!lastName) return;
+            
+            const email = prompt('Enter email:');
+            if (!email || !email.includes('@')) {
+                alert('Please enter a valid email address');
+                return;
+            }
+            
+            const workStudy = confirm('Is this a work study student?');
+            const availability = prompt('Enter availability (e.g., Monday 09:00-17:00, Tuesday 10:00-15:00):') || '';
+
+            addWorkerToFirebase({
+                'First Name': firstName,
+                'Last Name': lastName,
+                'Email': email,
+                'Work Study': workStudy ? 'Yes' : 'No',
+                'Days & Times Available': availability
+            });
+        };
+
+        window.editWorker = function(workerId) {
+            const worker = workers.find(w => w.id === workerId);
+            if (!worker) return;
+
+            const firstName = prompt('Enter first name:', worker.firstName);
+            if (firstName === null) return;
+            
+            const lastName = prompt('Enter last name:', worker.lastName);
+            if (lastName === null) return;
+            
+            const email = prompt('Enter email:', worker.email);
+            if (!email || !email.includes('@')) {
+                alert('Please enter a valid email address');
+                return;
+            }
+            
+            const workStudy = confirm('Is this a work study student?');
+            const availability = prompt('Enter availability:', worker.availabilityText) || '';
+
+            updateWorkerInFirebase(workerId, {
+                'First Name': firstName,
+                'Last Name': lastName,
+                'Email': email,
+                'Work Study': workStudy ? 'Yes' : 'No',
+                'Days & Times Available': availability
+            });
+        };
+
+        window.deleteWorker = async function(workerId, workerName) {
+            if (!confirm(`Are you sure you want to delete ${workerName}? This action cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                await deleteDoc(doc(db, 'workplaces', currentWorkplace, 'workers', workerId));
+                alert('✅ Worker deleted successfully!');
+                await loadWorkers();
+            } catch (error) {
+                console.error('Error deleting worker:', error);
+                alert('❌ Error deleting worker: ' + error.message);
+            }
+        };
+
+        window.refreshWorkers = async function() {
+            await loadWorkers();
+        };
+
+        window.removeAllWorkers = async function() {
+            if (!confirm('⚠️ Are you sure you want to remove ALL workers? This action cannot be undone!')) {
+                return;
+            }
+
+            try {
+                const deletePromises = workers.map(worker => 
+                    deleteDoc(doc(db, 'workplaces', currentWorkplace, 'workers', worker.id))
+                );
+                
+                await Promise.all(deletePromises);
+                alert('✅ All workers removed successfully!');
+                await loadWorkers();
+            } catch (error) {
+                console.error('Error removing all workers:', error);
+                alert('❌ Error removing workers: ' + error.message);
+            }
+        };
+
+        // Firebase operations
+        async function addWorkerToFirebase(workerData) {
+            try {
+                await addDoc(collection(db, 'workplaces', currentWorkplace, 'workers'), {
+                    ...workerData,
+                    created_at: new Date().toISOString()
+                });
+                
+                alert('✅ Worker added successfully!');
+                await loadWorkers();
+            } catch (error) {
+                console.error('Error adding worker:', error);
+                alert('❌ Error adding worker: ' + error.message);
+            }
+        }
+
+        async function updateWorkerInFirebase(workerId, workerData) {
+            try {
+                await updateDoc(doc(db, 'workplaces', currentWorkplace, 'workers', workerId), {
+                    ...workerData,
+                    updated_at: new Date().toISOString()
+                });
+                
+                alert('✅ Worker updated successfully!');
+                await loadWorkers();
+            } catch (error) {
+                console.error('Error updating worker:', error);
+                alert('❌ Error updating worker: ' + error.message);
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>

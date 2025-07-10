@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background: white;
             border-radius: 15px;
@@ -47,10 +47,12 @@
             display: flex;
             gap: 1rem;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .user-info {
             text-align: right;
+            margin-right: 1rem;
         }
 
         .btn {
@@ -62,6 +64,8 @@
             cursor: pointer;
             text-decoration: none;
             transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
         }
 
         .btn:hover {
@@ -73,19 +77,33 @@
             background: rgba(220,53,69,0.8);
         }
 
+        .btn-danger:hover {
+            background: rgba(220,53,69,1);
+        }
+
         .content {
             padding: 3rem;
+        }
+
+        .workplace-selector {
+            margin-bottom: 3rem;
+        }
+
+        .workplace-selector h2 {
+            font-size: 2rem;
+            color: #343a40;
+            margin-bottom: 1.5rem;
             text-align: center;
         }
 
-        .features-grid {
+        .workplace-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 2rem;
-            margin-top: 2rem;
+            margin-bottom: 3rem;
         }
 
-        .feature-card {
+        .workplace-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 2rem;
@@ -93,47 +111,103 @@
             text-decoration: none;
             transition: all 0.3s ease;
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
-        .feature-card:hover {
+        .workplace-card:hover {
             transform: translateY(-5px) scale(1.02);
             box-shadow: 0 15px 30px rgba(102,126,234,0.3);
         }
 
-        .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+        .workplace-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.1);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        .feature-title {
+        .workplace-card:hover::before {
+            opacity: 1;
+        }
+
+        .workplace-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .workplace-title {
             font-size: 1.5rem;
             font-weight: bold;
             margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
         }
 
-        .feature-desc {
+        .workplace-desc {
             font-size: 1rem;
             opacity: 0.9;
             line-height: 1.5;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .workplace-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+
+        .workplace-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .workplace-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-1px);
         }
 
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
+            gap: 1.5rem;
             margin-bottom: 3rem;
         }
 
         .stat-card {
             background: white;
-            padding: 1.5rem;
+            padding: 2rem;
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             text-align: center;
+            border-left: 4px solid #667eea;
         }
 
         .stat-number {
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-weight: bold;
             color: #667eea;
             margin-bottom: 0.5rem;
@@ -142,6 +216,84 @@
         .stat-label {
             color: #6c757d;
             font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .features-section {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .features-section h3 {
+            font-size: 1.5rem;
+            color: #343a40;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #667eea;
+        }
+
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #343a40;
+        }
+
+        .feature-desc {
+            font-size: 0.9rem;
+            color: #6c757d;
+            line-height: 1.4;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+
+        /* Firebase Status */
+        .firebase-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .firebase-connected {
+            color: #28a745;
+        }
+
+        .firebase-disconnected {
+            color: #dc3545;
         }
 
         @media (max-width: 768px) {
@@ -151,16 +303,24 @@
                 text-align: center;
             }
             
+            .header-actions {
+                justify-content: center;
+            }
+            
             .content {
                 padding: 1.5rem;
             }
             
-            .features-grid {
+            .workplace-grid {
                 grid-template-columns: 1fr;
             }
             
             .stats {
                 grid-template-columns: repeat(2, 1fr);
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -173,6 +333,10 @@
                 <p>Employee Management & Scheduling System</p>
             </div>
             <div class="header-actions">
+                <div class="firebase-status" id="firebaseStatus">
+                    <span id="firebaseIndicator">🔴</span>
+                    <span id="firebaseText">Checking...</span>
+                </div>
                 <div class="user-info">
                     <div id="welcomeText">Welcome!</div>
                     <div id="userRole">User</div>
@@ -195,39 +359,66 @@
                     <div class="stat-number" id="activeSchedules">-</div>
                     <div class="stat-label">Active Schedules</div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="workStudyCount">-</div>
+                    <div class="stat-label">Work Study Students</div>
+                </div>
             </div>
 
-            <div class="features-grid">
-                <a href="schedule.html" class="feature-card">
-                    <div class="feature-icon">📅</div>
-                    <div class="feature-title">Schedule Manager</div>
-                    <div class="feature-desc">Create, manage, and optimize work schedules with advanced algorithms</div>
-                </a>
-
-                <div class="feature-card" onclick="openWorkerManagement()">
-                    <div class="feature-icon">👥</div>
-                    <div class="feature-title">Worker Management</div>
-                    <div class="feature-desc">Manage team members, availability, and work-study assignments</div>
+            <div class="workplace-selector">
+                <h2>Select Workplace</h2>
+                <div class="workplace-grid" id="workplaceGrid">
+                    <div class="loading">Loading workplaces...</div>
                 </div>
+            </div>
 
-                <div class="feature-card" onclick="openHoursManagement()">
-                    <div class="feature-icon">🕒</div>
-                    <div class="feature-title">Hours of Operation</div>
-                    <div class="feature-desc">Set and manage operating hours for each workplace</div>
-                </div>
-
-                <div class="feature-card" onclick="openReports()">
-                    <div class="feature-icon">📊</div>
-                    <div class="feature-title">Reports & Analytics</div>
-                    <div class="feature-desc">View detailed insights and analytics about your workforce</div>
+            <div class="features-section">
+                <h3>Quick Access Features</h3>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">🔥</div>
+                        <div class="feature-title">Firebase Integration</div>
+                        <div class="feature-desc">Real-time data sync and cloud storage for all workplace information</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🤖</div>
+                        <div class="feature-title">Smart Scheduling</div>
+                        <div class="feature-desc">Advanced algorithms ensure work-study students get exactly 5 hours</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-title">Analytics</div>
+                        <div class="feature-desc">Track worker utilization and schedule efficiency</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📱</div>
+                        <div class="feature-title">Mobile Friendly</div>
+                        <div class="feature-desc">Access and manage schedules from any device</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function() {
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+        import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+
+        // Firebase config
+        const config = {
+            apiKey: "AIzaSyBkkq4nPnmyfSOKtVLsO95rpAUsMDA1o0A",
+            authDomain: "workplace-scheduler-ace38.firebaseapp.com",
+            projectId: "workplace-scheduler-ace38",
+            storageBucket: "workplace-scheduler-ace38.firebasestorage.app",
+            messagingSenderId: "153631302747",
+            appId: "1:153631302747:web:2c731351893dca19510b7e"
+        };
+
+        let app, db, firebaseConnected = false;
+
+        // Initialize Firebase and dashboard
+        async function initializeDashboard() {
+            // Check authentication
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             
             if (!user.email) {
@@ -237,42 +428,201 @@
             
             document.getElementById('welcomeText').textContent = `Welcome, ${user.email.split('@')[0]}!`;
             document.getElementById('userRole').textContent = user.isAdmin ? 'Administrator' : 'User';
+
+            // Initialize Firebase
+            try {
+                app = initializeApp(config);
+                db = getFirestore(app);
+                firebaseConnected = true;
+                
+                document.getElementById('firebaseIndicator').textContent = '🟢';
+                document.getElementById('firebaseText').textContent = 'Firebase Connected';
+                document.getElementById('firebaseStatus').className = 'firebase-status firebase-connected';
+                
+                console.log('✅ Firebase connected successfully');
+            } catch (error) {
+                console.error('❌ Firebase connection failed:', error);
+                firebaseConnected = false;
+                
+                document.getElementById('firebaseIndicator').textContent = '🔴';
+                document.getElementById('firebaseText').textContent = 'Firebase Disconnected';
+                document.getElementById('firebaseStatus').className = 'firebase-status firebase-disconnected';
+            }
+
+            // Load workplaces and stats
+            await loadWorkplaces();
+            await loadDashboardStats();
+        }
+
+        // Load workplaces
+        async function loadWorkplaces() {
+            const grid = document.getElementById('workplaceGrid');
             
-            loadDashboardStats();
-        });
+            try {
+                let workplaces = [];
+                
+                if (firebaseConnected) {
+                    // Try to load from Firebase
+                    const snapshot = await getDocs(collection(db, 'workplaces'));
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        workplaces.push({
+                            id: doc.id,
+                            name: data.name || doc.id.replace('_', ' ').toUpperCase(),
+                            icon: getWorkplaceIcon(doc.id),
+                            description: getWorkplaceDescription(doc.id)
+                        });
+                    });
+                }
+                
+                // If no workplaces in Firebase, use defaults
+                if (workplaces.length === 0) {
+                    workplaces = [
+                        {
+                            id: 'esports_lounge',
+                            name: '🎮 eSports Lounge',
+                            icon: '🎮',
+                            description: 'Gaming center with high-end PCs and consoles for student recreation and competitive gaming.'
+                        },
+                        {
+                            id: 'esports_arena',
+                            name: '🏟️ eSports Arena',
+                            icon: '🏟️',
+                            description: 'Tournament-ready arena for hosting competitive gaming events and championships.'
+                        },
+                        {
+                            id: 'it_service_center',
+                            name: '💻 IT Service Center',
+                            icon: '💻',
+                            description: 'Technical support hub providing IT assistance and device repair services.'
+                        }
+                    ];
+                }
+
+                // Render workplaces
+                let html = '';
+                workplaces.forEach(workplace => {
+                    html += `
+                        <div class="workplace-card">
+                            <div class="workplace-icon">${workplace.icon}</div>
+                            <div class="workplace-title">${workplace.name}</div>
+                            <div class="workplace-desc">${workplace.description}</div>
+                            <div class="workplace-actions">
+                                <a href="schedule.html?workplace=${workplace.id}" class="workplace-btn">
+                                    📅 Schedule
+                                </a>
+                                <button class="workplace-btn" onclick="viewWorkers('${workplace.id}')">
+                                    👥 Workers
+                                </button>
+                                <button class="workplace-btn" onclick="manageHours('${workplace.id}')">
+                                    🕒 Hours
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                grid.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error loading workplaces:', error);
+                grid.innerHTML = '<div class="loading" style="color: #dc3545;">Error loading workplaces</div>';
+            }
+        }
 
         // Load dashboard statistics
         async function loadDashboardStats() {
             try {
-                // This would connect to Firebase to get real stats
-                // For now, showing placeholder values
-                document.getElementById('totalWorkers').textContent = '0';
-                document.getElementById('activeSchedules').textContent = '0';
+                if (!firebaseConnected) {
+                    document.getElementById('totalWorkers').textContent = '?';
+                    document.getElementById('activeSchedules').textContent = '?';
+                    document.getElementById('workStudyCount').textContent = '?';
+                    return;
+                }
+
+                let totalWorkers = 0;
+                let activeSchedules = 0;
+                let workStudyCount = 0;
+
+                // Count workers across all workplaces
+                const workplaces = ['esports_lounge', 'esports_arena', 'it_service_center'];
+                
+                for (const workplace of workplaces) {
+                    try {
+                        // Count workers
+                        const workersSnapshot = await getDocs(collection(db, 'workplaces', workplace, 'workers'));
+                        const workersCount = workersSnapshot.size;
+                        totalWorkers += workersCount;
+
+                        // Count work study students
+                        workersSnapshot.forEach(doc => {
+                            const data = doc.data();
+                            if (data['Work Study'] === 'Yes' || data.work_study === true) {
+                                workStudyCount++;
+                            }
+                        });
+
+                        // Count schedules
+                        const schedulesSnapshot = await getDocs(collection(db, 'workplaces', workplace, 'schedules'));
+                        if (schedulesSnapshot.size > 0) {
+                            activeSchedules++;
+                        }
+                    } catch (error) {
+                        console.warn(`Error loading stats for ${workplace}:`, error);
+                    }
+                }
+
+                document.getElementById('totalWorkers').textContent = totalWorkers;
+                document.getElementById('activeSchedules').textContent = activeSchedules;
+                document.getElementById('workStudyCount').textContent = workStudyCount;
+
             } catch (error) {
-                console.error('Error loading stats:', error);
+                console.error('Error loading dashboard stats:', error);
+                document.getElementById('totalWorkers').textContent = '?';
+                document.getElementById('activeSchedules').textContent = '?';
+                document.getElementById('workStudyCount').textContent = '?';
             }
         }
 
-        // Feature functions
-        function openWorkerManagement() {
-            alert('Worker Management feature coming soon!\n\nThis will allow you to:\n• Add/edit/remove workers\n• Manage availability\n• Handle work-study assignments');
+        // Helper functions
+        function getWorkplaceIcon(id) {
+            const icons = {
+                'esports_lounge': '🎮',
+                'esports_arena': '🏟️',
+                'it_service_center': '💻'
+            };
+            return icons[id] || '🏢';
         }
 
-        function openHoursManagement() {
-            alert('Hours Management feature coming soon!\n\nThis will allow you to:\n• Set operating hours\n• Manage multiple time periods\n• Configure different schedules per workplace');
+        function getWorkplaceDescription(id) {
+            const descriptions = {
+                'esports_lounge': 'Gaming center with high-end PCs and consoles for student recreation and competitive gaming.',
+                'esports_arena': 'Tournament-ready arena for hosting competitive gaming events and championships.',
+                'it_service_center': 'Technical support hub providing IT assistance and device repair services.'
+            };
+            return descriptions[id] || 'Workplace facility';
         }
 
-        function openReports() {
-            alert('Reports & Analytics feature coming soon!\n\nThis will provide:\n• Worker utilization reports\n• Schedule efficiency metrics\n• Work-study compliance tracking');
-        }
+        // Global functions
+        window.viewWorkers = function(workplaceId) {
+            const workplaceName = workplaceId.replace('_', ' ').toUpperCase();
+            window.open(`workers.html?workplace=${workplaceId}`, '_blank');
+        };
 
-        // Logout function
-        function logout() {
+        window.manageHours = function(workplaceId) {
+            // Open hours management in a new tab
+            window.open(`hours.html?workplace=${workplaceId}`, '_blank');
+        };
+
+        window.logout = function() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.removeItem('user');
                 window.location.href = 'index.html';
             }
-        }
+        };
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
     </script>
 </body>
 </html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hours Management</title>
+    <style>
+        /* Use same styling as workers.html */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .content {
+            padding: 2rem;
+        }
+        .day-row {
+            display: grid;
+            grid-template-columns: 120px 1fr 1fr 100px;
+            gap: 1rem;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid #eee;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+        }
+        input[type="time"] {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #1e7e34; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div>
+                <h1 id="workplaceName">⏰ Hours Management</h1>
+                <p>Set operating hours for each day</p>
+            </div>
+            <a href="dashboard.html" style="color: white; text-decoration: none;">← Back to Dashboard</a>
+        </header>
+
+        <div class="content">
+            <div id="hoursForm">
+                <!-- Days will be populated here -->
+            </div>
+            <button class="btn btn-success" onclick="saveHours()" style="margin-top: 1rem;">💾 Save Hours</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+        import { getFirestore, doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+
+        const config = {
+            apiKey: "AIzaSyBkkq4nPnmyfSOKtVLsO95rpAUsMDA1o0A",
+            authDomain: "workplace-scheduler-ace38.firebaseapp.com",
+            projectId: "workplace-scheduler-ace38",
+            storageBucket: "workplace-scheduler-ace38.firebasestorage.app",
+            messagingSenderId: "153631302747",
+            appId: "1:153631302747:web:2c731351893dca19510b7e"
+        };
+
+        const app = initializeApp(config);
+        const db = getFirestore(app);
+        
+        let currentWorkplace = null;
+        const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+        // Initialize
+        async function initialize() {
+            const urlParams = new URLSearchParams(window.location.search);
+            currentWorkplace = urlParams.get('workplace');
+            
+            if (!currentWorkplace) {
+                alert('No workplace specified');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            document.getElementById('workplaceName').textContent = 
+                `⏰ ${currentWorkplace.replace('_', ' ').toUpperCase()} Hours`;
+
+            await loadHours();
+        }
+
+        async function loadHours() {
+            try {
+                const workplaceRef = doc(db, 'workplaces', currentWorkplace);
+                const workplaceDoc = await getDoc(workplaceRef);
+                
+                let hoursData = {};
+                if (workplaceDoc.exists()) {
+                    hoursData = workplaceDoc.data().hours_of_operation || {};
+                }
+
+                displayHoursForm(hoursData);
+            } catch (error) {
+                console.error('Error loading hours:', error);
+            }
+        }
+
+        function displayHoursForm(hoursData) {
+            const form = document.getElementById('hoursForm');
+            let html = '';
+
+            DAYS.forEach(day => {
+                const dayHours = hoursData[day] && hoursData[day][0] ? hoursData[day][0] : null;
+                const startTime = dayHours ? dayHours.start : '09:00';
+                const endTime = dayHours ? dayHours.end : '17:00';
+                const isOpen = !!dayHours;
+
+                html += `
+                    <div class="day-row">
+                        <label><strong>${day}</strong></label>
+                        <div>
+                            <label>Start:</label>
+                            <input type="time" id="${day}_start" value="${startTime}" ${!isOpen ? 'disabled' : ''}>
+                        </div>
+                        <div>
+                            <label>End:</label>
+                            <input type="time" id="${day}_end" value="${endTime}" ${!isOpen ? 'disabled' : ''}>
+                        </div>
+                        <label>
+                            <input type="checkbox" id="${day}_open" ${isOpen ? 'checked' : ''} onchange="toggleDay('${day}')">
+                            Open
+                        </label>
+                    </div>
+                `;
+            });
+
+            form.innerHTML = html;
+        }
+
+        window.toggleDay = function(day) {
+            const isOpen = document.getElementById(`${day}_open`).checked;
+            document.getElementById(`${day}_start`).disabled = !isOpen;
+            document.getElementById(`${day}_end`).disabled = !isOpen;
+        };
+
+        window.saveHours = async function() {
+            try {
+                const hoursData = {};
+
+                DAYS.forEach(day => {
+                    const isOpen = document.getElementById(`${day}_open`).checked;
+                    if (isOpen) {
+                        const start = document.getElementById(`${day}_start`).value;
+                        const end = document.getElementById(`${day}_end`).value;
+                        
+                        hoursData[day] = [{
+                            start: start,
+                            end: end,
+                            start_hour: timeToHour(start),
+                            end_hour: timeToHour(end)
+                        }];
+                    }
+                });
+
+                const workplaceRef = doc(db, 'workplaces', currentWorkplace);
+                await updateDoc(workplaceRef, {
+                    hours_of_operation: hoursData,
+                    updated_at: new Date().toISOString()
+                });
+
+                alert('✅ Hours saved successfully!');
+            } catch (error) {
+                console.error('Error saving hours:', error);
+                alert('❌ Error saving hours: ' + error.message);
+            }
+        };
+
+        function timeToHour(timeStr) {
+            if (!timeStr) return 0;
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours + (minutes / 60);
+        }
+
+        document.addEventListener('DOMContentLoaded', initialize);
+    </script>
+</body>
+</html>
